@@ -11,12 +11,10 @@ repositories {
 val invoker: Configuration by configurations.creating
 
 dependencies {
-    compileOnly("com.google.cloud.functions:functions-framework-api:1.0.4")
     invoker("com.google.cloud.functions.invoker:java-function-invoker:1.1.0")
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("com.google.cloud:google-cloudevent-types:0.3.0")
 
     testImplementation("com.google.cloud.functions:functions-framework-api:1.0.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")

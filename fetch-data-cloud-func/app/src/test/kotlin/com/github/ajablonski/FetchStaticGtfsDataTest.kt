@@ -4,7 +4,6 @@
 package com.github.ajablonski
 
 import com.google.common.testing.TestLogHandler
-import com.google.events.cloud.pubsub.v1.Message
 import io.mockk.every
 import io.mockk.mockkStatic
 import org.assertj.core.api.Assertions.assertThat
@@ -32,12 +31,12 @@ class FetchStaticGtfsDataTest {
 
         every { Instant.now() }.returns(Instant.parse("2022-04-04T22:14:00Z"))
 
-        val message = Message().apply {
-            data = Base64.getEncoder().encodeToString("""
+        val data = Base64.getEncoder().encodeToString(
+            """
                 "trigger": "fetch-gtfs-data"
-            """.trimIndent().toByteArray(Charsets.UTF_8))
-        }
-        messageHandler.accept(message, null)
+            """.trimIndent().toByteArray(Charsets.UTF_8)
+        )
+        messageHandler.accept(PubSubMessage(data, "messageId", "2022-01-01T00:00:00Z", emptyMap()))
 
         val logMessage = LOG_HANDLER.storedLogRecords[0].message
         assertThat(logMessage).isEqualTo("Attempting to fetch data at 2022-04-04T22:14:00Z")
