@@ -1,7 +1,7 @@
 terraform {
   required_version = "1.1.7"
   required_providers {
-    gcp = {
+    google = {
       source  = "hashicorp/google"
       version = "~> 4.16.0"
     }
@@ -19,14 +19,12 @@ provider "google" {
 resource "google_storage_bucket" "gtfs_data" {
   location      = "US-CENTRAL1"
   name          = "tsc-gtfs-data"
-  project       = "transit-stats-chicago"
   storage_class = "STANDARD"
 }
 
 resource "google_storage_bucket" "terraform_state" {
   location = "US-CENTRAL1"
   name     = "tsc-terraform-state"
-  project  = "transit-stats-chicago"
 
   lifecycle_rule {
     action {
@@ -63,3 +61,38 @@ resource "google_storage_bucket" "terraform_state" {
   }
 }
 
+resource "google_storage_bucket" "artifacts" {
+  location      = "US-CENTRAL1"
+  name          = "tsc-artifacts"
+  storage_class = "STANDARD"
+}
+
+resource "google_cloudfunctions_function" "fetch_gtfs_data" {
+  name                  = "fetch-gtfs-data"
+  runtime               = "java17"
+  source_archive_bucket = google_storage_bucket.artifacts.name
+  source_archive_object = "fetch-gtfs-data/app.zip"
+  ingress_settings      = "ALLOW_INTERNAL_ONLY"
+  entry_point           = "com.github.ajablonski.FetchStaticGtfsData"
+  max_instances         = 1
+  event_trigger {
+    event_type = "google.pubsub.topic.publish"
+    resource   = google_pubsub_topic.scheduling_topic.id
+  }
+}
+
+resource "google_pubsub_topic" "scheduling_topic" {
+  name                       = "fetch-gtfs-data-triggers"
+  message_retention_duration = "86400s"
+}
+
+resource "google_cloud_scheduler_job" "fetch_gtfs_data_trigger" {
+  name      = "fetch-gtfs-data-trigger"
+  schedule  = "0 0 * * *"
+  time_zone = "America/Chicago"
+
+  pubsub_target {
+    topic_name = google_pubsub_topic.scheduling_topic.id
+    data       = base64encode(jsonencode({ "trigger" = "fetch-gtfs-data" }))
+  }
+}
