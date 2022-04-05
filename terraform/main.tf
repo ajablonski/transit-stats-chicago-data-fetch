@@ -67,11 +67,25 @@ resource "google_storage_bucket" "artifacts" {
   storage_class = "STANDARD"
 }
 
+data "google_storage_bucket_object" "fetch_gtfs_data_deployment" {
+  bucket = google_storage_bucket.artifacts.name
+  name   = "fetch-gtfs-data/app.zip"
+}
+
+resource "local_file" "dummy_template_file" {
+  filename = "gtfs_data_hash.md5"
+  content  = data.google_storage_bucket_object.fetch_gtfs_data_deployment.md5hash
+}
+
 resource "google_cloudfunctions_function" "fetch_gtfs_data" {
+  depends_on = [
+    local_file.dummy_template_file,
+    data.google_storage_bucket_object.fetch_gtfs_data_deployment
+  ]
   name                  = "fetch-gtfs-data"
   runtime               = "java17"
   source_archive_bucket = google_storage_bucket.artifacts.name
-  source_archive_object = "fetch-gtfs-data/app.zip"
+  source_archive_object = data.google_storage_bucket_object.fetch_gtfs_data_deployment.name
   ingress_settings      = "ALLOW_INTERNAL_ONLY"
   entry_point           = "com.github.ajablonski.FetchStaticGtfsData"
   max_instances         = 1
@@ -96,3 +110,4 @@ resource "google_cloud_scheduler_job" "fetch_gtfs_data_trigger" {
     data       = base64encode(jsonencode({ "trigger" = "fetch-gtfs-data" }))
   }
 }
+

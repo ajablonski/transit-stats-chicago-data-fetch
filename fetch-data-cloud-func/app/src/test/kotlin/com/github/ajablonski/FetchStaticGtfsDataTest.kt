@@ -32,11 +32,12 @@ class FetchStaticGtfsDataTest {
         every { Instant.now() }.returns(Instant.parse("2022-04-04T22:14:00Z"))
 
         val data = Base64.getEncoder().encodeToString(
-            """
+            """{
                 "trigger": "fetch-gtfs-data"
-            """.trimIndent().toByteArray(Charsets.UTF_8)
+            }""".trimIndent().toByteArray(Charsets.UTF_8)
         )
-        messageHandler.accept(PubSubMessage(data, "messageId", "2022-01-01T00:00:00Z", emptyMap()))
+        val message = PubSubMessage(data, "messageId", "2022-01-01T00:00:00Z", emptyMap())
+        messageHandler.accept(message, null)
 
         val logMessage = LOG_HANDLER.storedLogRecords[0].message
         assertThat(logMessage).isEqualTo("Attempting to fetch data at 2022-04-04T22:14:00Z")
