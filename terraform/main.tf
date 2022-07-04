@@ -134,6 +134,20 @@ resource "google_project_iam_member" "allow_cloudbuild_functions_access" {
   role    = data.google_iam_role.cloudfunctions_developer_role.id
 }
 
+data "google_service_account" "appspot_service_account" {
+  account_id = "transit-stats-chicago@appspot.gserviceaccount.com"
+}
+
+data "google_iam_role" "service_account_role" {
+  name = "roles/iam.serviceAccountUser"
+}
+
+resource "google_service_account_iam_member" "allow_build_agent_as_cloud_functions_service_user" {
+  member             = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
+  role               = data.google_iam_role.service_account_role.name
+  service_account_id = data.google_service_account.appspot_service_account.id
+}
+
 resource "google_cloudbuild_trigger" "cloudbuild_trigger" {
   name               = "fetch-gtfs-pipeline-build"
   include_build_logs = "INCLUDE_BUILD_LOGS_WITH_STATUS"
