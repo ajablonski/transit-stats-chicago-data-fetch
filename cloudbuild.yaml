@@ -1,6 +1,7 @@
 steps:
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     args:
+      - gcloud
       - functions
       - deploy
       - fetch-gtfs-data
