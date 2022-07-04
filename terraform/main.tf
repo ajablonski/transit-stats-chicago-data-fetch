@@ -3,7 +3,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "~> 4.16.0"
+      version = "~> 4.27.0"
     }
   }
   backend "gcs" {
@@ -112,11 +112,15 @@ resource "google_cloud_scheduler_job" "fetch_gtfs_data_trigger" {
 }
 
 resource "google_cloudbuild_trigger" "cloudbuild_trigger" {
-#  name = "Build Transit Stats Chicago GCP Repo"
-  trigger_template {
-    branch_name = "main"
-    repo_name = "ajablonski/transit-stats-chicago-gcp"
-  }
-  filename = "cloudbuild.yaml"
-}
+  name               = "fetch-gtfs-pipeline-build"
+  include_build_logs = "INCLUDE_BUILD_LOGS_WITH_STATUS"
+  filename           = "cloudbuild.yaml"
 
+  github {
+    name  = "transit-stats-chicago-gcp"
+    owner = "ajablonski"
+    push {
+      branch = "^main$"
+    }
+  }
+}
