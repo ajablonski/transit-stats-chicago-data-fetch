@@ -120,8 +120,8 @@ data "google_project" "project" {}
 
 resource "google_project_service_identity" "cloudbuild_service_account" {
   provider = google-beta
-  project = data.google_project.project.project_id
-  service = "cloudbuild.gserviceaccount.com"
+  project  = data.google_project.project.project_id
+  service  = "cloudbuild.googleapis.com"
 }
 
 data "google_iam_role" "cloudfunctions_developer_role" {
@@ -129,7 +129,7 @@ data "google_iam_role" "cloudfunctions_developer_role" {
 }
 
 resource "google_project_iam_member" "allow_cloudbuild_functions_access" {
-  member  = google_project_service_identity.cloudbuild_service_account.id
+  member  = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
   project = data.google_project.project.project_id
   role    = data.google_iam_role.cloudfunctions_developer_role.id
 }
