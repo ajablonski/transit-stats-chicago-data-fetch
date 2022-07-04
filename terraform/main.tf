@@ -16,6 +16,11 @@ provider "google" {
   region  = "us-central1"
 }
 
+provider "google-beta" {
+  project = "transit-stats-chicago"
+  region  = "us-central1"
+}
+
 resource "google_storage_bucket" "gtfs_data" {
   location      = "US-CENTRAL1"
   name          = "tsc-gtfs-data"
@@ -111,6 +116,24 @@ resource "google_cloud_scheduler_job" "fetch_gtfs_data_trigger" {
   }
 }
 
+data "google_project" "project" {}
+
+resource "google_project_service_identity" "cloudbuild_service_account" {
+  provider = google-beta
+  project = data.google_project.project.project_id
+  service = "cloudbuild.gserviceaccount.com"
+}
+
+data "google_iam_role" "cloudfunctions_developer_role" {
+  name = "roles/cloudfunctions.developer"
+}
+
+resource "google_project_iam_member" "allow_cloudbuild_functions_access" {
+  member  = google_project_service_identity.cloudbuild_service_account.id
+  project = data.google_project.project.project_id
+  role    = data.google_iam_role.cloudfunctions_developer_role.id
+}
+
 resource "google_cloudbuild_trigger" "cloudbuild_trigger" {
   name               = "fetch-gtfs-pipeline-build"
   include_build_logs = "INCLUDE_BUILD_LOGS_WITH_STATUS"
@@ -123,4 +146,6 @@ resource "google_cloudbuild_trigger" "cloudbuild_trigger" {
       branch = "^main$"
     }
   }
+
+  service_account = ""
 }
