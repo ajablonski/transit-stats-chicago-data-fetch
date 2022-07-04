@@ -1,5 +1,5 @@
 terraform {
-  required_version = "1.1.7"
+  required_version = "1.2.4"
   required_providers {
     google = {
       source  = "hashicorp/google"
@@ -109,5 +109,14 @@ resource "google_cloud_scheduler_job" "fetch_gtfs_data_trigger" {
     topic_name = google_pubsub_topic.scheduling_topic.id
     data       = base64encode(jsonencode({ "trigger" = "fetch-gtfs-data" }))
   }
+}
+
+resource "google_cloudbuild_trigger" "cloudbuild_trigger" {
+#  name = "Build Transit Stats Chicago GCP Repo"
+  trigger_template {
+    branch_name = "main"
+    repo_name = "ajablonski/transit-stats-chicago-gcp"
+  }
+  filename = "cloudbuild.yaml"
 }
 

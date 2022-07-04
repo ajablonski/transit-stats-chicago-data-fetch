@@ -1,0 +1,14 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/transit-stats-chicago/fetch-data', 'fetch-data-cloud-func']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/transit-stats-chicago/fetch-data']
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    args:
+      - functions
+      - deploy
+      - fetch-gtfs-data
+      - --region=us-central1
+      - --source=fetch-data-cloud-func
+      - --trigger-topic=fetch-gtfs-data-triggers
+      - --runtime=java17
