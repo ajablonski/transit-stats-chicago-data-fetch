@@ -9,6 +9,6 @@ steps:
       - deploy
       - fetch-gtfs-data
       - --region=us-central1
-      - --source=fetch-data-cloud-func/app/build/distributions/app.zip
+      - --source=fetch-data-cloud-func/app/build/distributions
       - --trigger-topic=fetch-gtfs-data-triggers
       - --runtime=java17
