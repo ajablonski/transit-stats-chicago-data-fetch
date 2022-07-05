@@ -1,7 +1,7 @@
 steps:
   - name: gradle:7.4-jdk17
     entrypoint: gradle
-    args: ['-p', 'fetch-data-cloud-func', 'zipJar']
+    args: ['-p', 'fetch-data-cloud-func', 'shadowJar']
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     args:
       - gcloud
@@ -9,6 +9,6 @@ steps:
       - deploy
       - fetch-gtfs-data
       - --region=us-central1
-      - --source=fetch-data-cloud-func/app/build/distributions
+      - --source=fetch-data-cloud-func/app/build/libs
       - --trigger-topic=fetch-gtfs-data-triggers
       - --runtime=java17
