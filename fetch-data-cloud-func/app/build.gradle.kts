@@ -1,5 +1,7 @@
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+
 plugins {
-    kotlin("jvm") version "1.6.20"
+    kotlin("jvm") version "1.7.10"
     id("com.github.ben-manes.versions") version "0.42.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
@@ -21,15 +23,23 @@ dependencies {
     testImplementation("com.google.cloud.functions:functions-framework-api:1.0.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
     testImplementation("com.google.truth:truth:1.1.3")
-    testImplementation("org.mockito:mockito-core:4.4.0")
+    testImplementation("org.mockito:mockito-core:4.6.1")
     testImplementation("com.google.guava:guava-testlib:31.1-jre")
-    testImplementation("org.assertj:assertj-core:3.22.0")
-    testImplementation("io.mockk:mockk:1.12.3")
+    testImplementation("org.assertj:assertj-core:3.23.1")
+    testImplementation("io.mockk:mockk:1.12.4")
 }
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.withType<DependencyUpdatesTask> {
+    val preReleaseVersion = "^.*(rc-?\\d+|m\\d+)$".toRegex(RegexOption.IGNORE_CASE)
+    rejectVersionIf {
+        preReleaseVersion.matches(candidate.version)
+    }
+    gradleReleaseChannel = "current"
 }
 
 tasks.named<Test>("test") {
