@@ -17,11 +17,14 @@ dependencies {
     invoker("com.google.cloud.functions.invoker:java-function-invoker:1.1.0")
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
+    implementation(platform("com.google.cloud:libraries-bom:26.0.0"))
+
+    implementation("com.google.cloud:google-cloud-storage")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("com.google.cloud:google-cloudevent-types:0.3.0")
 
     testImplementation("com.google.cloud.functions:functions-framework-api:1.0.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
     testImplementation("com.google.truth:truth:1.1.3")
     testImplementation("org.mockito:mockito-core:4.6.1")
     testImplementation("com.google.guava:guava-testlib:31.1-jre")
