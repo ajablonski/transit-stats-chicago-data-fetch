@@ -63,11 +63,23 @@ class FetchStaticGtfsData : BackgroundFunction<PubSubMessage> {
             .map { LocalDateTime.parse(it, DateTimeFormatter.ofPattern("EE, dd MMM yyyy HH:mm:ss zzz")) }
             .getOrDefault(LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT")))
 
-        val subPath = lastModifiedDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd")) + "/gtfs_0.zip"
+        val subPath = lastModifiedDateTime.format(DateTimeFormatter.ofPattern("'static'/yyyy/MM/dd"))
+        val prefix = "$subPath/gtfs_"
+        var blobPage = storage.list(bucketId, Storage.BlobListOption.prefix(prefix))
+        var largestIndex = -1
+        while (blobPage != null) {
+            largestIndex = maxOf(blobPage
+                .values
+                .mapNotNull { it.name.removePrefix(prefix).removeSuffix(".zip").toIntOrNull() }
+                .maxOrNull() ?: -1, largestIndex)
 
-        logger.info("Downloading newer version and storing at gs://$bucketId/static/$subPath")
+            blobPage = blobPage.nextPage
+        }
 
-        storage.create(BlobInfo.newBuilder(bucketId, "static/$subPath").build(), fullResponse.body())
+        val filename = "gtfs_${largestIndex+1}.zip"
+        logger.info("Downloading newer version and storing at gs://$bucketId/$subPath/$filename")
+
+        storage.create(BlobInfo.newBuilder(bucketId, "$subPath/$filename").build(), fullResponse.body())
 
         logger.info("Successfully saved file, updating ETag")
 

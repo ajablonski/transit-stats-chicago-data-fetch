@@ -1,5 +1,7 @@
 package com.github.ajablonski
 
+import com.google.cloud.PageImpl
+import com.google.cloud.storage.Blob
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.google.common.testing.TestLogHandler
@@ -60,12 +62,15 @@ class FetchStaticGtfsDataTest {
                 "Last-Modified" to listOf("Thu, 28 Jul 2022 23:42:33 GMT")
             )
         ) { _, _ -> true })
+        every {
+            fakeStorage.list(bucketName, *anyVararg())
+        }.returns(PageImpl(null, null, emptyList()))
     }
 
     @Test
     fun shouldLoadMostRecentGtfsEtagFirstAndLogValue() {
         every {
-            fakeStorage.get("tsc-gtfs-data", "static/latest.txt").getContent()
+            fakeStorage.get(bucketName, "static/latest.txt").getContent()
         }.returns(sampleETag1.toByteArray(Charsets.UTF_8))
 
         messageHandler.accept(message, null)
@@ -81,7 +86,7 @@ class FetchStaticGtfsDataTest {
     @Test
     fun shouldHandleLatestFileNotBeingPresent() {
         every {
-            fakeStorage.get("tsc-gtfs-data", "static/latest.txt")
+            fakeStorage.get(bucketName, "static/latest.txt")
         }.returns(null)
 
         messageHandler.accept(message, null)
@@ -131,7 +136,7 @@ class FetchStaticGtfsDataTest {
     @Test
     fun shouldStoreGtfsDataIfNew() {
         every {
-            fakeStorage.get("tsc-gtfs-data", "static/latest.txt").getContent()
+            fakeStorage.get(bucketName, "static/latest.txt").getContent()
         }.returns(sampleETag1.toByteArray(Charsets.UTF_8))
 
         messageHandler.accept(message, null)
@@ -143,7 +148,78 @@ class FetchStaticGtfsDataTest {
                 "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_0.zip"
             )
 
-        val expectedBlob = BlobInfo.newBuilder("tsc-gtfs-data", "static/2022/07/28/gtfs_0.zip").build()
+        val expectedBlob = BlobInfo.newBuilder(bucketName, "static/2022/07/28/gtfs_0.zip").build()
+        verify {
+            fakeStorage.create(expectedBlob, testBody)
+        }
+        assertThat(logHandler.storedLogRecords[3])
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Successfully saved file, updating ETag"
+            )
+    }
+
+    @Test
+    fun shouldStoreGtfsDataIfNewWithIncrementedIndexIfFileAlreadyExists() {
+        every {
+            fakeStorage.get(bucketName, "static/latest.txt").getContent()
+        }.returns(sampleETag1.toByteArray(Charsets.UTF_8))
+
+        val mockBlob = mockk<Blob>()
+        every {
+            fakeStorage.list(bucketName, Storage.BlobListOption.prefix("static/2022/07/28/gtfs_"))
+        }.returns(PageImpl(null, null, listOf(mockBlob)))
+        every { mockBlob.name }.returns("static/2022/07/28/gtfs_1.zip")
+
+        messageHandler.accept(message, null)
+
+        assertThat(logHandler.storedLogRecords[2])
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_2.zip"
+            )
+
+
+        val expectedBlob = BlobInfo.newBuilder(bucketName, "static/2022/07/28/gtfs_2.zip").build()
+        verify {
+            fakeStorage.create(expectedBlob, testBody)
+        }
+        assertThat(logHandler.storedLogRecords[3])
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Successfully saved file, updating ETag"
+            )
+    }
+
+    @Test
+    fun shouldStoreGtfsDataIfNewWithIncrementedIndexIfFileAlreadyExistsAndIterateThroughBlobPages() {
+        every {
+            fakeStorage.get(bucketName, "static/latest.txt").getContent()
+        }.returns(sampleETag1.toByteArray(Charsets.UTF_8))
+
+        val mockBlob1 = mockk<Blob> { every { name }.returns("static/2022/07/28/gtfs_2.zip") }
+        val mockBlob2 = mockk<Blob> { every { name }.returns("static/2022/07/28/gtfs_1.zip") }
+        val page2 = PageImpl(null, null, listOf(mockBlob2))
+        val page1 = PageImpl({ page2 }, "cursor", listOf(mockBlob1))
+        every {
+            fakeStorage.list(bucketName, Storage.BlobListOption.prefix("static/2022/07/28/gtfs_"))
+        }.returns(page1)
+
+
+        messageHandler.accept(message, null)
+
+        assertThat(logHandler.storedLogRecords[2])
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_3.zip"
+            )
+
+
+        val expectedBlob = BlobInfo.newBuilder(bucketName, "static/2022/07/28/gtfs_3.zip").build()
         verify {
             fakeStorage.create(expectedBlob, testBody)
         }
@@ -161,7 +237,7 @@ class FetchStaticGtfsDataTest {
 
         every { Instant.now() }.returns(Instant.parse("2022-04-04T22:14:00Z"))
         every {
-            fakeStorage.get("tsc-gtfs-data", "static/latest.txt").getContent()
+            fakeStorage.get(bucketName, "static/latest.txt").getContent()
         }.returns(sampleETag1.toByteArray(Charsets.UTF_8))
 
         every {
@@ -191,7 +267,7 @@ class FetchStaticGtfsDataTest {
                 "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/04/04/gtfs_0.zip"
             )
 
-        val expectedBlob = BlobInfo.newBuilder("tsc-gtfs-data", "static/2022/04/04/gtfs_0.zip").build()
+        val expectedBlob = BlobInfo.newBuilder(bucketName, "static/2022/04/04/gtfs_0.zip").build()
         verify {
             fakeStorage.create(expectedBlob, testBody)
         }
@@ -200,7 +276,7 @@ class FetchStaticGtfsDataTest {
     @Test
     fun shouldStoreGtfsDataIfNoPreviousETagExists() {
         every {
-            fakeStorage.get("tsc-gtfs-data", "static/latest.txt")
+            fakeStorage.get(bucketName, "static/latest.txt")
         }.returns(null)
 
         every {
@@ -231,7 +307,7 @@ class FetchStaticGtfsDataTest {
                 "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_0.zip"
             )
 
-        val expectedBlob = BlobInfo.newBuilder("tsc-gtfs-data", "static/2022/07/28/gtfs_0.zip").build()
+        val expectedBlob = BlobInfo.newBuilder(bucketName, "static/2022/07/28/gtfs_0.zip").build()
         verify {
             fakeStorage.create(expectedBlob, testBody)
         }
@@ -240,15 +316,16 @@ class FetchStaticGtfsDataTest {
     @Test
     fun shouldUpdateSavedETagIfOneAlreadyPresent() {
         every {
-            fakeStorage.get("tsc-gtfs-data", "static/latest.txt").getContent()
+            fakeStorage.get(bucketName, "static/latest.txt").getContent()
         }.returns(sampleETag1.toByteArray(Charsets.UTF_8))
 
         messageHandler.accept(message, null)
 
-        val latestFileBlob = BlobInfo.newBuilder("tsc-gtfs-data", "static/latest.txt").build()
+        val latestFileBlob = BlobInfo.newBuilder(bucketName, "static/latest.txt").build()
         verify {
             fakeStorage.create(
-                latestFileBlob, sampleETag2.toByteArray(Charsets.UTF_8))
+                latestFileBlob, sampleETag2.toByteArray(Charsets.UTF_8)
+            )
         }
 
         assertThat(logHandler.storedLogRecords[4])
@@ -262,22 +339,23 @@ class FetchStaticGtfsDataTest {
     @Test
     fun shouldSaveETagIfOneNotAlreadyPresent() {
         every {
-            fakeStorage.get("tsc-gtfs-data", "static/latest.txt")
+            fakeStorage.get(bucketName, "static/latest.txt")
         }.returns(null)
 
         messageHandler.accept(message, null)
 
-        val latestFileBlob = BlobInfo.newBuilder("tsc-gtfs-data", "static/latest.txt").build()
+        val latestFileBlob = BlobInfo.newBuilder(bucketName, "static/latest.txt").build()
         verify {
             fakeStorage.create(
-                latestFileBlob, sampleETag2.toByteArray(Charsets.UTF_8))
+                latestFileBlob, sampleETag2.toByteArray(Charsets.UTF_8)
+            )
         }
     }
 
     @Test
     fun shouldNotStoreGtfsDataIfAlreadyExists() {
         every {
-            fakeStorage.get("tsc-gtfs-data", "static/latest.txt").getContent()
+            fakeStorage.get(bucketName, "static/latest.txt").getContent()
         }.returns(sampleETag2.toByteArray(Charsets.UTF_8))
 
         messageHandler.accept(message, null)
@@ -310,6 +388,7 @@ class FetchStaticGtfsDataTest {
         private const val fakeGtfsUrl = "http://fake.url.com/gtfs"
         private const val sampleETag1 = "807a42b5dba2d81:0"
         private const val sampleETag2 = "807a42b5dba2d82:0"
+        private const val bucketName = "tsc-gtfs-data"
         private val testBody = "Test Body".byteInputStream(Charsets.UTF_8)
         private val logHandler = TestLogHandler()
         private val logger = Logger.getLogger(FetchStaticGtfsData::class.qualifiedName)
