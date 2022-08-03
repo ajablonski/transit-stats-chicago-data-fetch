@@ -1,6 +1,5 @@
 package com.github.ajablonski
 
-import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.google.common.testing.TestLogHandler
@@ -12,6 +11,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.io.InputStream
 import java.net.http.HttpClient
 import java.net.http.HttpHeaders
 import java.net.http.HttpResponse
@@ -19,7 +19,6 @@ import java.net.http.HttpResponse.BodyHandler
 import java.time.Instant
 import java.util.*
 import java.util.logging.Level
-import java.util.logging.LogRecord
 import java.util.logging.Logger
 
 class FetchStaticGtfsDataTest {
@@ -48,11 +47,11 @@ class FetchStaticGtfsDataTest {
             ) { _, _ -> true }
         )
 
-        val mockResponse = mockk<HttpResponse<ByteArray>>()
+        val mockResponse = mockk<HttpResponse<InputStream>>()
         every {
             mockHttpClient.send(match { request ->
                 request.method() == "GET" && request.uri().toString() == fakeGtfsUrl
-            }, any<BodyHandler<ByteArray>>())
+            }, any<BodyHandler<InputStream>>())
         }.returns(mockResponse)
         every { mockResponse.body() }.returns(testBody)
         every { mockResponse.headers() }.returns(HttpHeaders.of(
@@ -177,11 +176,10 @@ class FetchStaticGtfsDataTest {
             ) { _, _ -> true }
         )
 
-        val testBody = "Test Body".toByteArray(Charsets.UTF_8)
         every {
             mockHttpClient.send(match { request ->
                 request.method() == "GET" && request.uri().toString() == fakeGtfsUrl
-            }, any<BodyHandler<ByteArray>>()).body()
+            }, any<BodyHandler<InputStream>>()).body()
         }.returns(testBody)
 
         messageHandler.accept(message, null)
@@ -218,11 +216,10 @@ class FetchStaticGtfsDataTest {
             ) { _, _ -> true }
         )
 
-        val testBody = "Test Body".toByteArray(Charsets.UTF_8)
         every {
             mockHttpClient.send(match { request ->
                 request.method() == "GET" && request.uri().toString() == fakeGtfsUrl
-            }, any<BodyHandler<ByteArray>>()).body()
+            }, any<BodyHandler<InputStream>>()).body()
         }.returns(testBody)
 
         messageHandler.accept(message, null)
@@ -313,7 +310,7 @@ class FetchStaticGtfsDataTest {
         private const val fakeGtfsUrl = "http://fake.url.com/gtfs"
         private const val sampleETag1 = "807a42b5dba2d81:0"
         private const val sampleETag2 = "807a42b5dba2d82:0"
-        private val testBody = "Test Body".toByteArray(Charsets.UTF_8)
+        private val testBody = "Test Body".byteInputStream(Charsets.UTF_8)
         private val logHandler = TestLogHandler()
         private val logger = Logger.getLogger(FetchStaticGtfsData::class.qualifiedName)
 
