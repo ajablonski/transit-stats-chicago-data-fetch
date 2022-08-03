@@ -1,8 +1,8 @@
 steps:
-  - name: gradle:7.4-jdk17
+  - name: gradle:7.5-jdk17-alpine
     entrypoint: gradle
     args: ['-p', 'fetch-data-cloud-func', 'shadowJar']
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:396.0.0-alpine
     args:
       - gcloud
       - functions
