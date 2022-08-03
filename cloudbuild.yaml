@@ -8,7 +8,10 @@ steps:
       - functions
       - deploy
       - fetch-gtfs-data
+      - --ingress-settings=internal-only
+      - --entry-point=com.github.ajablonski.FetchStaticGtfsData
       - --region=us-central1
       - --source=fetch-data-cloud-func/app/build/libs
       - --trigger-topic=fetch-gtfs-data-triggers
       - --runtime=java17
+      - --max-instances=1

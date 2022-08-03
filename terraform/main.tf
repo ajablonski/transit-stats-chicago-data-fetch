@@ -1,5 +1,5 @@
 terraform {
-  required_version = "1.2.4"
+  required_version = "1.2.6"
   required_providers {
     google = {
       source  = "hashicorp/google"
@@ -75,29 +75,6 @@ resource "google_storage_bucket" "artifacts" {
 data "google_storage_bucket_object" "fetch_gtfs_data_deployment" {
   bucket = google_storage_bucket.artifacts.name
   name   = "fetch-gtfs-data/app.zip"
-}
-
-resource "local_file" "dummy_template_file" {
-  filename = "gtfs_data_hash.md5"
-  content  = data.google_storage_bucket_object.fetch_gtfs_data_deployment.md5hash
-}
-
-resource "google_cloudfunctions_function" "fetch_gtfs_data" {
-  depends_on = [
-    local_file.dummy_template_file,
-    data.google_storage_bucket_object.fetch_gtfs_data_deployment
-  ]
-  name                  = "fetch-gtfs-data"
-  runtime               = "java17"
-  source_archive_bucket = google_storage_bucket.artifacts.name
-  source_archive_object = data.google_storage_bucket_object.fetch_gtfs_data_deployment.name
-  ingress_settings      = "ALLOW_INTERNAL_ONLY"
-  entry_point           = "com.github.ajablonski.FetchStaticGtfsData"
-  max_instances         = 1
-  event_trigger {
-    event_type = "google.pubsub.topic.publish"
-    resource   = google_pubsub_topic.scheduling_topic.id
-  }
 }
 
 resource "google_pubsub_topic" "scheduling_topic" {
