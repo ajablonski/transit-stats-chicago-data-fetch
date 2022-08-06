@@ -19,17 +19,17 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation(platform("com.google.cloud:libraries-bom:26.0.0"))
 
-    implementation("com.google.cloud:google-cloud-storage")
+    implementation("com.google.cloud:google-cloud-storage:2.11.2")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
     testImplementation("com.google.cloud.functions:functions-framework-api:1.0.4")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
     testImplementation("com.google.truth:truth:1.1.3")
     testImplementation("org.mockito:mockito-core:4.6.1")
     testImplementation("com.google.guava:guava-testlib:31.1-jre")
     testImplementation("org.assertj:assertj-core:3.23.1")
-    testImplementation("io.mockk:mockk:1.12.4")
+    testImplementation("io.mockk:mockk:1.12.5")
 }
 
 java {
@@ -38,7 +38,7 @@ java {
 }
 
 tasks.withType<DependencyUpdatesTask> {
-    val preReleaseVersion = "^.*(rc-?\\d+|m\\d+)$".toRegex(RegexOption.IGNORE_CASE)
+    val preReleaseVersion = "^.*(rc-?\\d+|m\\d+|-Beta)$".toRegex(RegexOption.IGNORE_CASE)
     rejectVersionIf {
         preReleaseVersion.matches(candidate.version)
     }
