@@ -66,17 +66,6 @@ resource "google_storage_bucket" "terraform_state" {
   }
 }
 
-resource "google_storage_bucket" "artifacts" {
-  location      = "US-CENTRAL1"
-  name          = "tsc-artifacts"
-  storage_class = "STANDARD"
-}
-
-data "google_storage_bucket_object" "fetch_gtfs_data_deployment" {
-  bucket = google_storage_bucket.artifacts.name
-  name   = "fetch-gtfs-data/app.zip"
-}
-
 resource "google_pubsub_topic" "scheduling_topic" {
   name                       = "fetch-gtfs-data-triggers"
   message_retention_duration = "86400s"
