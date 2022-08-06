@@ -7,7 +7,7 @@ steps:
       - gcloud
       - functions
       - deploy
-      - fetch-gtfs-data
+      - fetch-static-gtfs-data
       - --ingress-settings=internal-only
       - --entry-point=com.github.ajablonski.FetchStaticGtfsData
       - --region=us-central1
