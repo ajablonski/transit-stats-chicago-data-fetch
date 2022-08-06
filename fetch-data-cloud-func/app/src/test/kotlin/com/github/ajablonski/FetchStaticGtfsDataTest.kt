@@ -154,7 +154,7 @@ class FetchStaticGtfsDataTest {
 
         val expectedBlob = BlobInfo.newBuilder(FetchStaticGtfsData.bucketId, "static/2022/07/28/gtfs_0.zip").build()
         verify {
-            mockStorage.create(expectedBlob, testBody)
+            mockStorage.createFrom(expectedBlob, testBody)
         }
         assertThat(logHandler.storedLogRecords[3])
             .hasFieldOrPropertyWithValue("level", Level.INFO)
@@ -188,7 +188,7 @@ class FetchStaticGtfsDataTest {
 
         val expectedBlob = BlobInfo.newBuilder(FetchStaticGtfsData.bucketId, "static/2022/07/28/gtfs_2.zip").build()
         verify {
-            mockStorage.create(expectedBlob, testBody)
+            mockStorage.createFrom(expectedBlob, testBody)
         }
         assertThat(logHandler.storedLogRecords[3])
             .hasFieldOrPropertyWithValue("level", Level.INFO)
@@ -225,7 +225,7 @@ class FetchStaticGtfsDataTest {
 
         val expectedBlob = BlobInfo.newBuilder(FetchStaticGtfsData.bucketId, "static/2022/07/28/gtfs_3.zip").build()
         verify {
-            mockStorage.create(expectedBlob, testBody)
+            mockStorage.createFrom(expectedBlob, testBody)
         }
         assertThat(logHandler.storedLogRecords[3])
             .hasFieldOrPropertyWithValue("level", Level.INFO)
@@ -273,7 +273,7 @@ class FetchStaticGtfsDataTest {
 
         val expectedBlob = BlobInfo.newBuilder(FetchStaticGtfsData.bucketId, "static/2022/04/04/gtfs_0.zip").build()
         verify {
-            mockStorage.create(expectedBlob, testBody)
+            mockStorage.createFrom(expectedBlob, testBody)
         }
     }
 
@@ -313,7 +313,7 @@ class FetchStaticGtfsDataTest {
 
         val expectedBlob = BlobInfo.newBuilder(FetchStaticGtfsData.bucketId, "static/2022/07/28/gtfs_0.zip").build()
         verify {
-            mockStorage.create(expectedBlob, testBody)
+            mockStorage.createFrom(expectedBlob, testBody)
         }
     }
 

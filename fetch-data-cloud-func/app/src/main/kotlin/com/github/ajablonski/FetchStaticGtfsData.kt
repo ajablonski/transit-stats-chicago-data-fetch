@@ -51,7 +51,7 @@ class FetchStaticGtfsData : BackgroundFunction<PubSubMessage> {
         val filePath = generateFilePath(gtfsStaticDataResponse)
 
         logger.info("Downloading newer version and storing at gs://$bucketId/$filePath")
-        storage.create(BlobInfo.newBuilder(bucketId, filePath).build(), gtfsStaticDataResponse.body())
+        storage.createFrom(BlobInfo.newBuilder(bucketId, filePath).build(), gtfsStaticDataResponse.body())
         logger.info("Successfully saved file, updating ETag")
 
         storage.create(lastDownloadedETagBlobInfo, currentETag.toByteArray(Charsets.UTF_8))
