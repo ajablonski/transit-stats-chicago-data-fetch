@@ -50,8 +50,8 @@ class FetchStaticGtfsData : BackgroundFunction<PubSubMessage> {
 
         val filePath = generateFilePath(gtfsStaticDataResponse)
 
-        logger.info("Downloading newer version and storing at gs://$bucketId/$filePath")
-        storage.createFrom(BlobInfo.newBuilder(bucketId, filePath).build(), gtfsStaticDataResponse.body())
+        logger.info("Downloading newer version and storing at gs://${Constants.bucketId}/$filePath")
+        storage.createFrom(BlobInfo.newBuilder(Constants.bucketId, filePath).build(), gtfsStaticDataResponse.body())
         logger.info("Successfully saved file, updating ETag")
 
         storage.create(lastDownloadedETagBlobInfo, currentETag.toByteArray(Charsets.UTF_8))
@@ -68,7 +68,7 @@ class FetchStaticGtfsData : BackgroundFunction<PubSubMessage> {
 
         val subPath = lastModifiedDateTime.format(DateTimeFormatter.ofPattern("'static'/yyyy/MM/dd"))
         val prefix = "$subPath/gtfs_"
-        var blobPage = storage.list(bucketId, Storage.BlobListOption.prefix(prefix))
+        var blobPage = storage.list(Constants.bucketId, Storage.BlobListOption.prefix(prefix))
         var largestIndex = -1
         while (blobPage != null) {
             largestIndex = maxOf(blobPage
@@ -100,9 +100,8 @@ class FetchStaticGtfsData : BackgroundFunction<PubSubMessage> {
 
     companion object {
         const val gtfsUrl = "https://www.transitchicago.com/downloads/sch_data/google_transit.zip"
-        const val bucketId = "tsc-gtfs-data"
         private const val lastDownloadedETagFileName = "static/latest.txt"
-        private val lastDownloadedETagBlobInfo = BlobInfo.newBuilder(bucketId, lastDownloadedETagFileName).build()
+        private val lastDownloadedETagBlobInfo = BlobInfo.newBuilder(Constants.bucketId, lastDownloadedETagFileName).build()
         private val logger = Logger.getLogger(FetchStaticGtfsData::class.java.name)
     }
 }

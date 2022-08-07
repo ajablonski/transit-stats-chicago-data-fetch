@@ -2,6 +2,7 @@ import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 plugins {
     kotlin("jvm") version "1.7.10"
+    kotlin("plugin.serialization") version "1.7.10"
     id("com.github.ben-manes.versions") version "0.42.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
@@ -21,6 +22,7 @@ dependencies {
 
     implementation("com.google.cloud:google-cloud-storage:2.11.2")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
 
     testImplementation("com.google.cloud.functions:functions-framework-api:1.0.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
