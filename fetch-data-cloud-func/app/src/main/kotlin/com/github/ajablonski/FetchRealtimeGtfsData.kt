@@ -15,6 +15,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse.BodyHandlers
 import java.nio.file.Path
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.logging.Logger
 import kotlin.io.path.readText
@@ -34,13 +35,18 @@ class FetchRealtimeGtfsData : BackgroundFunction<PubSubMessage> {
 
         val timestamp = json.decodeFromString<PartialLocationResponse>(responseBody).ctatt.tmst
 
-        val prefix = LocalDateTime.parse(timestamp).format(DateTimeFormatter.ofPattern("'realtime'/YYYY/MM/dd"))
+        val timestampLocalDateTime = LocalDateTime.parse(timestamp)
+        val prefix = timestampLocalDateTime.format(DateTimeFormatter.ofPattern("'realtime'/YYYY/MM/dd"))
         logger.info("Storing data at gs://tsc-gtfs-data/realtime/2022/08/06/2022-08-06T18:54:12.json")
         storage.create(
-            BlobInfo.newBuilder(
-                Constants.bucketId,
-                "$prefix/$timestamp.json"
-            ).setContentType("application/json").build(),
+            BlobInfo
+                .newBuilder(
+                    Constants.bucketId,
+                    "$prefix/$timestamp.json"
+                )
+                .setContentType("application/json")
+                .setCustomTime(timestampLocalDateTime.atZone(timeZone).toEpochSecond() * secondsToMilliseconds)
+                .build(),
             responseBody.toByteArray()
         )
         logger.info("Data successfully stored")
@@ -60,11 +66,13 @@ class FetchRealtimeGtfsData : BackgroundFunction<PubSubMessage> {
     }
 
     companion object {
+        private const val secondsToMilliseconds = 1000
         private const val baseUrl = "https://lapi.transitchicago.com/api/1.0/ttpositions.aspx"
         private const val routeParam = "rt"
         private const val outputTypeParam = "outputType"
         private const val outputTypeValue = "JSON"
         private const val keyParam = "key"
+        private val timeZone = ZoneId.of("America/Chicago")
         private val routesValue = listOf("Red", "Blue", "Brn", "G", "Org", "P", "Pink", "Y").joinToString(",")
         private val defaultSecretPath = Path.of("/etc/secrets/gtfs_secrets.json")
         private val json = Json { ignoreUnknownKeys = true }

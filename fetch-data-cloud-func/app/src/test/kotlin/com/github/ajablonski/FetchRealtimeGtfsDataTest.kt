@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test
 import java.net.http.HttpClient
 import java.net.http.HttpResponse
 import java.net.http.HttpResponse.BodyHandler
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -85,10 +87,16 @@ class FetchRealtimeGtfsDataTest {
 
         verify {
             mockStorage.create(
-                BlobInfo.newBuilder(
-                    Constants.bucketId,
-                    "realtime/2022/08/06/2022-08-06T18:54:12.json"
-                ).setContentType("application/json").build(),
+                BlobInfo
+                    .newBuilder(
+                        Constants.bucketId,
+                        "realtime/2022/08/06/2022-08-06T18:54:12.json"
+                    )
+                    .setContentType("application/json")
+                    .setCustomTime(
+                        ZonedDateTime.of(2022, 8, 6, 18, 54, 12, 0, ZoneId.of("America/Chicago")).toEpochSecond() * 1000
+                    )
+                    .build(),
                 testData.toByteArray(),
             )
         }
