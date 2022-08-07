@@ -69,7 +69,7 @@ class FetchRealtimeGtfsDataTest {
                         .groupBy { it.first }
                         .mapValues { it.value.first().second }
                     queryParamMap["rt"]!!.split(",")
-                        .containsAll(setOf("Red", "Blue", "Brn", "G", "Org", "P", "Pink"))
+                        .containsAll(setOf("Red", "Blue", "Brn", "G", "Org", "P", "Pink", "Y"))
                             && queryParamMap["outputType"] == "JSON"
                             && queryParamMap["key"] == trainTrackerApiKey
                             && request.method() == "GET"
