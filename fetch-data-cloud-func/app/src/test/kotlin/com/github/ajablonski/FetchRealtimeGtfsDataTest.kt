@@ -88,8 +88,8 @@ class FetchRealtimeGtfsDataTest {
                 BlobInfo.newBuilder(
                     Constants.bucketId,
                     "realtime/2022/08/06/2022-08-06T18:54:12.json"
-                ).build(),
-                testData.toByteArray()
+                ).setContentType("application/json").build(),
+                testData.toByteArray(),
             )
         }
     }

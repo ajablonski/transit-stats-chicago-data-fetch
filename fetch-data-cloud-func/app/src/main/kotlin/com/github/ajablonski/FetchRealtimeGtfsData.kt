@@ -40,7 +40,7 @@ class FetchRealtimeGtfsData : BackgroundFunction<PubSubMessage> {
             BlobInfo.newBuilder(
                 Constants.bucketId,
                 "$prefix/$timestamp.json"
-            ).build(),
+            ).setContentType("application/json").build(),
             responseBody.toByteArray()
         )
         logger.info("Data successfully stored")
