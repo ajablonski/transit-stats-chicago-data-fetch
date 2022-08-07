@@ -100,6 +100,30 @@ resource "google_project_iam_member" "allow_cloudbuild_functions_access" {
   role    = data.google_iam_role.cloudfunctions_developer_role.id
 }
 
+data "google_iam_role" "secret_viewer_role" {
+  name = "roles/secretmanager.secretAccessor"
+}
+
+data "google_iam_role" "secret_metadata_viewer_role" {
+  name = "roles/secretmanager.viewer"
+}
+
+data "google_secret_manager_secret" "gtfs_data_secret" {
+  secret_id = "gtfs-secrets-cta"
+}
+
+resource "google_secret_manager_secret_iam_binding" "grant_view_secret_metadata_to_build_user" {
+  members   = ["serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"]
+  role      = data.google_iam_role.secret_metadata_viewer_role.id
+  secret_id = data.google_secret_manager_secret.gtfs_data_secret.id
+}
+
+resource "google_secret_manager_secret_iam_binding" "grant_view_secret_to_functions_user" {
+  members   = ["serviceAccount:${data.google_service_account.appspot_service_account.email}"]
+  role      = data.google_iam_role.secret_viewer_role.id
+  secret_id = data.google_secret_manager_secret.gtfs_data_secret.id
+}
+
 data "google_service_account" "appspot_service_account" {
   account_id = "transit-stats-chicago@appspot.gserviceaccount.com"
 }
