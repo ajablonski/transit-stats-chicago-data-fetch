@@ -1,5 +1,6 @@
 package com.github.ajablonski
 
+import com.github.ajablonski.Constants.bucketId
 import com.google.cloud.functions.BackgroundFunction
 import com.google.cloud.functions.Context
 import com.google.cloud.storage.BlobInfo
@@ -36,12 +37,12 @@ class FetchRealtimeGtfsData : BackgroundFunction<PubSubMessage> {
         val timestamp = json.decodeFromString<PartialLocationResponse>(responseBody).ctatt.tmst
 
         val timestampLocalDateTime = LocalDateTime.parse(timestamp)
-        val prefix = timestampLocalDateTime.format(DateTimeFormatter.ofPattern("'realtime'/YYYY/MM/dd"))
-        logger.info("Storing data at gs://tsc-gtfs-data/realtime/2022/08/06/2022-08-06T18:54:12.json")
+        val prefix = timestampLocalDateTime.format(DateTimeFormatter.ofPattern("'realtime/raw'/YYYY/MM/dd"))
+        logger.info("Storing data at gs://$bucketId/$prefix/$timestamp.json")
         storage.create(
             BlobInfo
                 .newBuilder(
-                    Constants.bucketId,
+                    bucketId,
                     "$prefix/$timestamp.json"
                 )
                 .setContentType("application/json")
