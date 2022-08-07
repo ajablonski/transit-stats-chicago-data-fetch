@@ -31,6 +31,6 @@ steps:
       - --trigger-topic=fetch-realtime-gtfs-data-triggers
       - --runtime=java17
       - --max-instances=1
-      - --set-secrets=/etc/secrets/gtfs_secrets.json=gtfs-secrets-cta:1
+#      - --set-secrets=/etc/secrets/gtfs_secrets.json=gtfs-secrets-cta:1
     waitFor:
       - build
