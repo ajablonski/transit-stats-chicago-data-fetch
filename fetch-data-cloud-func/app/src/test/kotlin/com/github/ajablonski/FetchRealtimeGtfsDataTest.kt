@@ -1,5 +1,6 @@
 package com.github.ajablonski
 
+import com.google.cloud.functions.Context
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.google.common.testing.TestLogHandler
@@ -23,6 +24,7 @@ import kotlin.io.path.toPath
 class FetchRealtimeGtfsDataTest {
     private val mockStorage = mockk<Storage>(relaxed = true)
     private lateinit var messageHandler: FetchRealtimeGtfsData
+    private val mockContext = mockk<Context> { every { timestamp() }.returns("2022-01-02T00:00:00") }
     private val mockHttpClient = mockk<HttpClient>(relaxed = true) {
         every {
             send(
@@ -104,17 +106,21 @@ class FetchRealtimeGtfsDataTest {
 
     @Test
     fun shouldLogProgress() {
-        messageHandler.accept(message, null)
+        messageHandler.accept(message, mockContext)
 
         logHandler.storedLogRecords[0].apply {
-            assertThat(message).isEqualTo("Fetching data")
+            assertThat(message).isEqualTo("Retrieved trigger event with timestamp 2022-01-02T00:00:00")
             assertThat(level).isEqualTo(Level.INFO)
         }
         logHandler.storedLogRecords[1].apply {
-            assertThat(message).isEqualTo("Storing data at gs://tsc-gtfs-data/realtime/raw/2022/08/06/2022-08-06T18:54:12.json")
+            assertThat(message).isEqualTo("Fetching data")
             assertThat(level).isEqualTo(Level.INFO)
         }
         logHandler.storedLogRecords[2].apply {
+            assertThat(message).isEqualTo("Storing data at gs://tsc-gtfs-data/realtime/raw/2022/08/06/2022-08-06T18:54:12.json")
+            assertThat(level).isEqualTo(Level.INFO)
+        }
+        logHandler.storedLogRecords[3].apply {
             assertThat(message).isEqualTo("Data successfully stored")
             assertThat(level).isEqualTo(Level.INFO)
         }

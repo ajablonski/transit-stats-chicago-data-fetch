@@ -30,6 +30,7 @@ class FetchRealtimeGtfsData : BackgroundFunction<PubSubMessage> {
         @TestOnly set
 
     override fun accept(payload: PubSubMessage?, context: Context?) {
+        logger.info("Retrieved trigger event with timestamp ${context?.timestamp()}")
         val uri = generateUri()
         logger.info("Fetching data")
         val responseBody = httpClient.send(HttpRequest.newBuilder(uri).GET().build(), BodyHandlers.ofString()).body()

@@ -40,7 +40,7 @@ java {
 }
 
 tasks.withType<DependencyUpdatesTask> {
-    val preReleaseVersion = "^.*(rc-?\\d+|m\\d+|-Beta)$".toRegex(RegexOption.IGNORE_CASE)
+    val preReleaseVersion = "^.*(rc-?\\d*|m\\d+|-Beta)$".toRegex(RegexOption.IGNORE_CASE)
     rejectVersionIf {
         preReleaseVersion.matches(candidate.version)
     }
