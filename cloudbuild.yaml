@@ -15,3 +15,17 @@ steps:
       - --trigger-topic=fetch-gtfs-data-triggers
       - --runtime=java17
       - --max-instances=1
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:396.0.0-alpine
+    args:
+      - gcloud
+      - functions
+      - deploy
+      - fetch-realtime-gtfs-data
+      - --ingress-settings=internal-only
+      - --entry-point=com.github.ajablonski.FetchRealtimeGtfsData
+      - --region=us-central1
+      - --source=fetch-data-cloud-func/app/build/libs
+      - --trigger-topic=fetch-realtime-gtfs-data-triggers
+      - --runtime=java17
+      - --max-instances=1
+      - --set-secrets=/etc/secrets/gtfs_secrets.json=gtfs-secrets-cta:1

@@ -66,7 +66,7 @@ class FetchRealtimeGtfsData : BackgroundFunction<PubSubMessage> {
         private const val outputTypeValue = "JSON"
         private const val keyParam = "key"
         private val routesValue = listOf("Red", "Blue", "Brn", "G", "Org", "P", "Pink", "Yellow").joinToString(",")
-        private val defaultSecretPath = Path.of("/tmp/gtfs-secret.json")
+        private val defaultSecretPath = Path.of("/etc/secrets/gtfs_secrets.json")
         private val json = Json { ignoreUnknownKeys = true }
         private val logger = Logger.getLogger(FetchRealtimeGtfsData::class.java.name)
     }
