@@ -1,5 +1,6 @@
 steps:
   - name: gradle:7.5.0-jdk17-alpine
+    id: build
     entrypoint: gradle
     args: ['-p', 'fetch-data-cloud-func', 'shadowJar']
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk:396.0.0-alpine
@@ -15,6 +16,8 @@ steps:
       - --trigger-topic=fetch-gtfs-data-triggers
       - --runtime=java17
       - --max-instances=1
+    waitFor:
+      - build
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk:396.0.0-alpine
     args:
       - gcloud
@@ -29,3 +32,5 @@ steps:
       - --runtime=java17
       - --max-instances=1
       - --set-secrets=/etc/secrets/gtfs_secrets.json=gtfs-secrets-cta:1
+    waitFor:
+      - build
