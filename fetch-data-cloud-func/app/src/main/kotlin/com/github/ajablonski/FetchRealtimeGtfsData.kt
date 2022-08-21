@@ -10,7 +10,7 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.annotations.TestOnly
 import java.net.http.HttpClient
 import java.nio.file.Path
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.util.logging.Logger
 import kotlin.io.path.readText
 
@@ -31,7 +31,7 @@ class FetchRealtimeGtfsData(secretPath: Path = defaultSecretPath) : BackgroundFu
         logger.info("Retrieved trigger event with timestamp ${context?.timestamp()}")
         logger.info("Fetching rail data")
         railDataFetcher.fetch()
-        val minute = if (context?.timestamp() != null) LocalDateTime.parse(context.timestamp()).minute else null
+        val minute = if (context?.timestamp() != null) ZonedDateTime.parse(context.timestamp()).minute else null
         if (minute != null && minute % 2 == 0) {
             logger.info("Fetching bus data")
             busDataFetcher.fetch()

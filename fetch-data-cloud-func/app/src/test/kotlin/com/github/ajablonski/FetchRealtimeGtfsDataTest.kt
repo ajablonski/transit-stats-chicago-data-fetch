@@ -20,7 +20,7 @@ import kotlin.io.path.toPath
 class FetchRealtimeGtfsDataTest {
     private val mockStorage = mockk<Storage>(relaxed = true) {}
     private lateinit var messageHandler: FetchRealtimeGtfsData
-    private val mockContext = mockk<Context> { every { timestamp() }.returns("2022-01-02T00:00:00") }
+    private val mockContext = mockk<Context> { every { timestamp() }.returns("2022-08-21T20:00:00.000Z") }
     private val mockHttpClient = mockk<HttpClient>(relaxed = true)
     private val mockRailDataFetcher = mockk<RailDataFetcher>(relaxed = true)
     private val mockBusDataFetcher = mockk<BusDataFetcher>(relaxed = true)
@@ -37,22 +37,22 @@ class FetchRealtimeGtfsDataTest {
 
     @Test
     fun shouldFetchRailDataOnEveryTrigger() {
-        every { mockContext.timestamp() }.returns("2022-01-02T00:00:00")
+        every { mockContext.timestamp() }.returns("2022-08-21T20:00:00.000Z")
         messageHandler.accept(message, mockContext)
         verify { mockRailDataFetcher.fetch() }
         clearMocks(mockRailDataFetcher)
-        every { mockContext.timestamp() }.returns("2022-01-02T00:01:00")
+        every { mockContext.timestamp() }.returns("2022-08-21T20:01:00.000Z")
         messageHandler.accept(message, mockContext)
         verify { mockRailDataFetcher.fetch() }
     }
 
     @Test
     fun shouldFetchBusDataOnEvenMinuteTriggers() {
-        every { mockContext.timestamp() }.returns("2022-01-02T00:00:00")
+        every { mockContext.timestamp() }.returns("2022-08-21T20:00:00.000Z")
         messageHandler.accept(message, mockContext)
         verify { mockBusDataFetcher.fetch() }
         clearMocks(mockBusDataFetcher)
-        every { mockContext.timestamp() }.returns("2022-01-02T00:01:00")
+        every { mockContext.timestamp() }.returns("2022-08-21T20:01:00.000Z")
         messageHandler.accept(message, mockContext)
         verify(exactly = 0) { mockBusDataFetcher.fetch() }
     }
@@ -62,7 +62,7 @@ class FetchRealtimeGtfsDataTest {
         messageHandler.accept(message, mockContext)
 
         logHandler.storedLogRecords[0].apply {
-            assertThat(message).isEqualTo("Retrieved trigger event with timestamp 2022-01-02T00:00:00")
+            assertThat(message).isEqualTo("Retrieved trigger event with timestamp 2022-08-21T20:00:00.000Z")
             assertThat(level).isEqualTo(Level.INFO)
         }
         logHandler.storedLogRecords[1].apply {
@@ -77,12 +77,12 @@ class FetchRealtimeGtfsDataTest {
 
     @Test
     fun shouldLogProgressWhenNotFetchingBus() {
-        every { mockContext.timestamp() }.returns("2022-01-02T00:01:00")
+        every { mockContext.timestamp() }.returns("2022-08-21T20:01:00.000Z")
 
         messageHandler.accept(message, mockContext)
 
         logHandler.storedLogRecords[0].apply {
-            assertThat(message).isEqualTo("Retrieved trigger event with timestamp 2022-01-02T00:01:00")
+            assertThat(message).isEqualTo("Retrieved trigger event with timestamp 2022-08-21T20:01:00.000Z")
             assertThat(level).isEqualTo(Level.INFO)
         }
         logHandler.storedLogRecords[1].apply {
