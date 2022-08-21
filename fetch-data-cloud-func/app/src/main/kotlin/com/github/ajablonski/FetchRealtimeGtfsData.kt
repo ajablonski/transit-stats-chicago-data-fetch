@@ -33,7 +33,7 @@ class FetchRealtimeGtfsData(secretPath: Path = defaultSecretPath) : BackgroundFu
         railDataFetcher.fetch()
         val minute = if (context?.timestamp() != null) ZonedDateTime.parse(context.timestamp()).minute else null
         if (minute != null && minute % 2 == 0) {
-            logger.info("Fetching bus data")
+            logger.info("Fetching bus data for minute $minute")
             busDataFetcher.fetch()
         } else {
             logger.info("Skipping bus data for minute $minute")

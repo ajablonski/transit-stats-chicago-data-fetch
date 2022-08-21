@@ -70,7 +70,7 @@ class FetchRealtimeGtfsDataTest {
             assertThat(level).isEqualTo(Level.INFO)
         }
         logHandler.storedLogRecords[2].apply {
-            assertThat(message).isEqualTo("Fetching bus data")
+            assertThat(message).isEqualTo("Fetching bus data for minute 0")
             assertThat(level).isEqualTo(Level.INFO)
         }
     }
