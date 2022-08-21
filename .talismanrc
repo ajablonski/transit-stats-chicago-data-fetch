@@ -1,3 +1,7 @@
 fileignoreconfig:
 - filename: cloudbuild.yaml
   allowed_patterns: [secret]
+- filename: fetch-data-cloud-func/app/src/main/kotlin/com/github/ajablonski/FetchRealtimeGtfsData.kt
+  allowed_patterns: [secret, key, Secret, Key]
+- filename: fetch-data-cloud-func/app/src/test/kotlin/com/github/ajablonski/FetchRealtimeGtfsDataTest.kt
+  allowed_patterns: [secret, key, Secret, Key]

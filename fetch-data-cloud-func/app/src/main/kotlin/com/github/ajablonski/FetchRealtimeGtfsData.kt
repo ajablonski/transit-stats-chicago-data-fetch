@@ -38,7 +38,7 @@ class FetchRealtimeGtfsData : BackgroundFunction<PubSubMessage> {
         val timestamp = json.decodeFromString<PartialLocationResponse>(responseBody).ctatt.tmst
 
         val timestampLocalDateTime = LocalDateTime.parse(timestamp)
-        val prefix = timestampLocalDateTime.format(DateTimeFormatter.ofPattern("'realtime/raw'/YYYY/MM/dd"))
+        val prefix = timestampLocalDateTime.format(DateTimeFormatter.ofPattern("'realtime/raw/rail'/YYYY/MM/dd"))
         logger.info("Storing data at gs://$bucketId/$prefix/$timestamp.json")
         storage.create(
             BlobInfo

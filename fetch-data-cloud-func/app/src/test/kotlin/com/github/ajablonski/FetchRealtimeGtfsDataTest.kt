@@ -92,7 +92,7 @@ class FetchRealtimeGtfsDataTest {
                 BlobInfo
                     .newBuilder(
                         Constants.bucketId,
-                        "realtime/raw/2022/08/06/2022-08-06T18:54:12.json"
+                        "realtime/raw/rail/2022/08/06/2022-08-06T18:54:12.json"
                     )
                     .setContentType("application/json")
                     .setCustomTime(
@@ -117,7 +117,7 @@ class FetchRealtimeGtfsDataTest {
             assertThat(level).isEqualTo(Level.INFO)
         }
         logHandler.storedLogRecords[2].apply {
-            assertThat(message).isEqualTo("Storing data at gs://tsc-gtfs-data/realtime/raw/2022/08/06/2022-08-06T18:54:12.json")
+            assertThat(message).isEqualTo("Storing data at gs://tsc-gtfs-data/realtime/raw/rail/2022/08/06/2022-08-06T18:54:12.json")
             assertThat(level).isEqualTo(Level.INFO)
         }
         logHandler.storedLogRecords[3].apply {
