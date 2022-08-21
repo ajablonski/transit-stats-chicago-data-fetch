@@ -5,3 +5,7 @@ fileignoreconfig:
   allowed_patterns: [secret, key, Secret, Key]
 - filename: fetch-data-cloud-func/app/src/test/kotlin/com/github/ajablonski/FetchRealtimeGtfsDataTest.kt
   allowed_patterns: [secret, key, Secret, Key]
+- filename: fetch-data-cloud-func/app/src/main/kotlin/com/github/ajablonski/RailDataFetcher.kt
+  allowed_patterns: [key, Key]
+- filename: fetch-data-cloud-func/app/src/test/kotlin/com/github/ajablonski/RailDataFetcherTest.kt
+  allowed_patterns: [key, Key]
