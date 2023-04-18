@@ -1,8 +1,10 @@
 package com.github.ajablonski
 
+import com.google.api.client.util.IOUtils
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.google.common.io.Resources
+import java.io.InputStreamReader
 import java.net.URI
 import java.net.URL
 import java.net.http.HttpClient
@@ -23,8 +25,8 @@ class BusDataFetcher(
     routeFile: URL = Resources.getResource("bus_routes.txt")
 ) {
     private val routeBatches =
-        routeFile.readText()
-            .split("\n")
+        InputStreamReader(routeFile.openStream())
+            .readLines()
             .drop(1)
             .map { it.split(",")[0] }
             .windowed(10, 10, true)
