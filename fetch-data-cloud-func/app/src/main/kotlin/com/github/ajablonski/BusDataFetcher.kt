@@ -2,6 +2,7 @@ package com.github.ajablonski
 
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
+import com.google.common.io.Resources
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -18,7 +19,7 @@ class BusDataFetcher(
     private val httpClient: HttpClient,
     private val storage: Storage,
     private val apiKey: String,
-    routeFile: Path? = BusDataFetcher::class.java.getResource("/bus_routes.txt")?.toURI()?.toPath()
+    routeFile: Path? = Resources.getResource("bus_routes.txt").toURI().toPath()
 ) {
     private val routeBatches = Files
         .readAllLines(routeFile)
