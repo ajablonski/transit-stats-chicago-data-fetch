@@ -1,8 +1,8 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 plugins {
-    kotlin("jvm") version "1.7.10"
-    kotlin("plugin.serialization") version "1.7.10"
+    kotlin("jvm") version "1.8.20"
+    kotlin("plugin.serialization") version "1.8.20"
     id("com.github.ben-manes.versions") version "0.46.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
@@ -15,14 +15,14 @@ val invoker: Configuration by configurations.creating
 
 dependencies {
     compileOnly("com.google.cloud.functions:functions-framework-api:1.0.4")
-    invoker("com.google.cloud.functions.invoker:java-function-invoker:1.1.1")
+    invoker("com.google.cloud.functions.invoker:java-function-invoker:1.2.1")
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    implementation(platform("com.google.cloud:libraries-bom:26.1.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.12.0"))
 
-    implementation("com.google.cloud:google-cloud-storage:2.11.3")
+    implementation("com.google.cloud:google-cloud-storage:2.22.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
     testImplementation("com.google.cloud.functions:functions-framework-api:1.0.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")

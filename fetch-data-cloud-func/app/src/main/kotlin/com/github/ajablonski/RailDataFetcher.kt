@@ -33,9 +33,9 @@ class RailDataFetcher(private val httpClient: HttpClient, private val storage: S
                     "$prefix/$timestamp.json"
                 )
                 .setContentType("application/json")
-                .setCustomTime(
+                .setCustomTimeOffsetDateTime(
                     timestampLocalDateTime.atZone(timeZone)
-                        .toEpochSecond() * secondsToMilliseconds
+                        .toOffsetDateTime()
                 )
                 .build(),
             responseBody.toByteArray()

@@ -80,8 +80,8 @@ internal class RailDataFetcherTest {
                         "realtime/raw/rail/2022/08/06/2022-08-06T18:54:12.json"
                     )
                     .setContentType("application/json")
-                    .setCustomTime(
-                        ZonedDateTime.of(2022, 8, 6, 18, 54, 12, 0, ZoneId.of("America/Chicago")).toEpochSecond() * 1000
+                    .setCustomTimeOffsetDateTime(
+                        ZonedDateTime.of(2022, 8, 6, 18, 54, 12, 0, ZoneId.of("America/Chicago")).toOffsetDateTime()
                     )
                     .build(),
                 testData.toByteArray(),
