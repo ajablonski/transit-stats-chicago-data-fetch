@@ -100,20 +100,25 @@ resource "google_cloud_scheduler_job" "fetch_realtime_gtfs_data_trigger" {
 
 data "google_project" "project" {}
 
-resource "google_project_service_identity" "cloudbuild_service_account" {
-  provider = google-beta
-  project  = data.google_project.project.project_id
-  service  = "cloudbuild.googleapis.com"
+# Used for Gen1 Cloud Functions
+data "google_service_account" "appspot_service_account" {
+  account_id = "transit-stats-chicago@appspot.gserviceaccount.com"
 }
 
-data "google_iam_role" "cloudfunctions_developer_role" {
-  name = "roles/cloudfunctions.developer"
+# Used for Gen2 Cloud Functions
+# Also used as identity for invoking cloud functions from Pub/sub subscription
+data "google_service_account" "gen2_compute_user" {
+  account_id = "998544061327-compute@developer.gserviceaccount.com"
 }
 
-resource "google_project_iam_member" "allow_cloudbuild_functions_access" {
-  member  = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
+data "google_iam_role" "run_invoker" {
+  name = "roles/run.invoker"
+}
+
+resource "google_project_iam_member" "allow_compute_service_user_cloud_run_invoker" {
+  member = "serviceAccount:${data.google_service_account.gen2_compute_user.email}"
   project = data.google_project.project.project_id
-  role    = data.google_iam_role.cloudfunctions_developer_role.id
+  role = data.google_iam_role.run_invoker.id
 }
 
 data "google_iam_role" "secret_viewer_role" {
@@ -130,12 +135,21 @@ resource "google_secret_manager_secret_iam_binding" "grant_view_secret_to_functi
   secret_id = data.google_secret_manager_secret.gtfs_data_secret.id
 }
 
-data "google_service_account" "appspot_service_account" {
-  account_id = "transit-stats-chicago@appspot.gserviceaccount.com"
+# Cloud Build agent roles
+resource "google_project_service_identity" "cloudbuild_service_account" {
+  provider = google-beta
+  project  = data.google_project.project.project_id
+  service  = "cloudbuild.googleapis.com"
 }
 
-data "google_service_account" "gen2_compute_user" {
-  account_id = "998544061327-compute@developer.gserviceaccount.com"
+data "google_iam_role" "cloudfunctions_developer_role" {
+  name = "roles/cloudfunctions.developer"
+}
+
+resource "google_project_iam_member" "allow_cloudbuild_functions_access" {
+  member  = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
+  project = data.google_project.project.project_id
+  role    = data.google_iam_role.cloudfunctions_developer_role.id
 }
 
 data "google_iam_role" "service_account_role" {
