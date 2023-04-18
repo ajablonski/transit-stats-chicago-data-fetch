@@ -17,6 +17,7 @@ steps:
       - --trigger-topic=fetch-static-gtfs-data-triggers
       - --runtime=java17
       - --max-instances=1
+      - --verbosity=debug
     waitFor:
       - build
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk:426.0.0-alpine
