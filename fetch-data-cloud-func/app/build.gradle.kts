@@ -3,8 +3,8 @@ import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 plugins {
     kotlin("jvm") version "1.7.10"
     kotlin("plugin.serialization") version "1.7.10"
-    id("com.github.ben-manes.versions") version "0.42.0"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.ben-manes.versions") version "0.46.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 repositories {
@@ -25,13 +25,13 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
 
     testImplementation("com.google.cloud.functions:functions-framework-api:1.0.4")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
     testImplementation("com.google.truth:truth:1.1.3")
-    testImplementation("org.mockito:mockito-core:4.7.0")
+    testImplementation("org.mockito:mockito-core:5.3.0")
     testImplementation("com.google.guava:guava-testlib:31.1-jre")
-    testImplementation("org.assertj:assertj-core:3.23.1")
-    testImplementation("io.mockk:mockk:1.12.5")
+    testImplementation("org.assertj:assertj-core:3.24.2")
+    testImplementation("io.mockk:mockk:1.13.5")
 }
 
 java {
