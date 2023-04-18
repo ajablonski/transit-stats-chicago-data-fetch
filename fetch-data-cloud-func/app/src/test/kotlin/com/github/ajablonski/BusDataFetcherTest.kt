@@ -134,7 +134,7 @@ internal class BusDataFetcherTest {
         verify {
             storage.create(
                 BlobInfo.newBuilder(Constants.bucketId, "realtime/raw/bus/2022/08/21/2022-08-21T20:02:03.json").build(),
-                match<ByteArray> { it.size == sampleResponse.length * 13 + 12 }
+                match<ByteArray> { it.size == sampleResponse.length * 13 + 12 * 2 + 2 }
             )
         }
     }

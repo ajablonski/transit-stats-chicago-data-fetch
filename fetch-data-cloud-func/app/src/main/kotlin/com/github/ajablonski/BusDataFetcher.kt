@@ -49,7 +49,7 @@ class BusDataFetcher(
         logger.info("Storing bus data at gs://${Constants.bucketId}/$filename")
         storage.create(
             BlobInfo.newBuilder(Constants.bucketId, filename).build(),
-            trackerResponses.joinToString("\n") { it.body() }.toByteArray(Charsets.UTF_8)
+            trackerResponses.joinToString(",\n", prefix = "[", postfix = "]") { it.body() }.toByteArray(Charsets.UTF_8)
         )
         logger.info("Bus data successfully stored")
     }
