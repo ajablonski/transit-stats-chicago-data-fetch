@@ -22,7 +22,7 @@ class BusDataFetcher(
     private val httpClient: HttpClient,
     private val storage: Storage,
     private val apiKey: String,
-    routeFile: URL = Resources.getResource("bus_routes.txt")
+    routeFile: URL = Resources.getResource(BusDataFetcher::class.java, "/bus_routes.txt")
 ) {
     private val routeBatches =
         Resources.readLines(routeFile, Charsets.UTF_8)
