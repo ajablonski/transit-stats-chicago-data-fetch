@@ -3,7 +3,7 @@ steps:
     id: build
     entrypoint: gradle
     args: ['-p', 'fetch-data-cloud-func', 'shadowJar']
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:396.0.0-alpine
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:426.0.0-alpine
     args:
       - gcloud
       - functions
@@ -18,7 +18,7 @@ steps:
       - --max-instances=1
     waitFor:
       - build
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:396.0.0-alpine
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:426.0.0-alpine
     args:
       - gcloud
       - functions
