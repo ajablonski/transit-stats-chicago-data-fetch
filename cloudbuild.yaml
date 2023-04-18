@@ -10,6 +10,7 @@ steps:
       - deploy
       - fetch-static-gtfs-data
       - --ingress-settings=internal-only
+      - --gen2
       - --entry-point=com.github.ajablonski.FetchStaticGtfsData
       - --region=us-central1
       - --source=fetch-data-cloud-func/app/build/libs

@@ -1,11 +1,11 @@
 package com.github.ajablonski
 
 import com.github.ajablonski.Constants.ETagHeadder
-import com.google.cloud.functions.BackgroundFunction
-import com.google.cloud.functions.Context
+import com.google.cloud.functions.CloudEventsFunction
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
+import io.cloudevents.CloudEvent
 import org.jetbrains.annotations.TestOnly
 import java.io.InputStream
 import java.net.URI
@@ -19,13 +19,13 @@ import java.time.format.DateTimeFormatter
 import java.util.logging.Logger
 import kotlin.jvm.optionals.getOrDefault
 
-class FetchStaticGtfsData : BackgroundFunction<PubSubMessage> {
+class FetchStaticGtfsData : CloudEventsFunction {
     var httpClient: HttpClient = HttpClient.newHttpClient()
         @TestOnly set
     var storage: Storage = StorageOptions.getDefaultInstance().service
         @TestOnly set
 
-    override fun accept(payload: PubSubMessage?, context: Context?) {
+    override fun accept(payload: CloudEvent?) {
         val lastDownloadedETag = fetchLastRetrievedGtfsEtag()
             .also {
                 if (it == null) {
@@ -82,7 +82,6 @@ class FetchStaticGtfsData : BackgroundFunction<PubSubMessage> {
         return "$subPath/gtfs_${largestIndex + 1}.zip"
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private fun fetchCurrentGtfsEtag(): String {
         val headRequestHeaders = httpClient.send(
             HttpRequest.newBuilder(URI.create(gtfsUrl)).method("HEAD", HttpRequest.BodyPublishers.noBody()).build(),
