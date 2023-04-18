@@ -18,7 +18,7 @@ class BusDataFetcher(
     private val httpClient: HttpClient,
     private val storage: Storage,
     private val apiKey: String,
-    routeFile: Path = ClassLoader.getSystemClassLoader().resources("bus_routes.txt").toList().first().toURI().toPath()
+    routeFile: Path? = BusDataFetcher::class.java.getResource("/bus_routes.txt")?.toURI()?.toPath()
 ) {
     private val routeBatches = Files
         .readAllLines(routeFile)
