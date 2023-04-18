@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.net.http.HttpClient
+import java.time.ZonedDateTime
 import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -50,11 +51,15 @@ class FetchRealtimeGtfsDataTest {
     fun shouldFetchBusDataOnEvenMinuteTriggers() {
         every { mockContext.timestamp() }.returns("2022-08-21T20:00:00.000Z")
         messageHandler.accept(message, mockContext)
-        verify { mockBusDataFetcher.fetch() }
+        verify {
+            mockBusDataFetcher.fetch(
+                ZonedDateTime.parse("2022-08-21T20:00:00.000Z")
+            )
+        }
         clearMocks(mockBusDataFetcher)
         every { mockContext.timestamp() }.returns("2022-08-21T20:01:00.000Z")
         messageHandler.accept(message, mockContext)
-        verify(exactly = 0) { mockBusDataFetcher.fetch() }
+        verify(exactly = 0) { mockBusDataFetcher.fetch(any()) }
     }
 
     @Test

@@ -2,7 +2,6 @@ package com.github.ajablonski
 
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.net.URI
@@ -55,7 +54,6 @@ class RailDataFetcher(private val httpClient: HttpClient, private val storage: S
     }
 
     companion object {
-        private const val secondsToMilliseconds = 1000
         private const val baseUrl = "https://lapi.transitchicago.com/api/1.0/ttpositions.aspx"
         private const val routeParam = "rt"
         private const val outputTypeParam = "outputType"
@@ -67,9 +65,3 @@ class RailDataFetcher(private val httpClient: HttpClient, private val storage: S
         private val logger = Logger.getLogger(RailDataFetcher::class.java.name)
     }
 }
-
-@Serializable
-data class PartialLocationResponse(val ctatt: PartialCtaTt)
-
-@Serializable
-data class PartialCtaTt(val tmst: String)

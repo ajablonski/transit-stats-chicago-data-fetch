@@ -4,7 +4,6 @@ import com.google.cloud.functions.BackgroundFunction
 import com.google.cloud.functions.Context
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.jetbrains.annotations.TestOnly
@@ -24,19 +23,23 @@ class FetchRealtimeGtfsData(secretPath: Path = defaultSecretPath) : BackgroundFu
 
     var railDataFetcher: RailDataFetcher = RailDataFetcher(httpClient, storage, apiKeys.trainTrackerApiKey)
         @TestOnly set
-    var busDataFetcher: BusDataFetcher = BusDataFetcher()
+    var busDataFetcher: BusDataFetcher = BusDataFetcher(
+        httpClient,
+        storage,
+        apiKeys.busTrackerApiKey
+    )
         @TestOnly set
 
     override fun accept(payload: PubSubMessage?, context: Context?) {
         logger.info("Retrieved trigger event with timestamp ${context?.timestamp()}")
         logger.info("Fetching rail data")
         railDataFetcher.fetch()
-        val minute = if (context?.timestamp() != null) ZonedDateTime.parse(context.timestamp()).minute else null
-        if (minute != null && minute % 2 == 0) {
-            logger.info("Fetching bus data for minute $minute")
-            busDataFetcher.fetch()
+        val time = if (context?.timestamp() != null) ZonedDateTime.parse(context.timestamp()) else null
+        if (time != null && time.minute % 2 == 0) {
+            logger.info("Fetching bus data for minute ${time.minute}")
+            busDataFetcher.fetch(time)
         } else {
-            logger.info("Skipping bus data for minute $minute")
+            logger.info("Skipping bus data for minute ${time?.minute}")
         }
     }
 
@@ -47,5 +50,3 @@ class FetchRealtimeGtfsData(secretPath: Path = defaultSecretPath) : BackgroundFu
     }
 }
 
-@Serializable
-data class Secrets(val trainTrackerApiKey: String)
