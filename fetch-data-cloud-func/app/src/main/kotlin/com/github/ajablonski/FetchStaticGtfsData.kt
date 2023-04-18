@@ -58,7 +58,6 @@ class FetchStaticGtfsData : CloudEventsFunction {
         logger.info("Successfully updated ETag")
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private fun generateFilePath(gtfsStaticDataResponse: HttpResponse<InputStream>): String {
         val lastModifiedDateTime = gtfsStaticDataResponse
             .headers()
