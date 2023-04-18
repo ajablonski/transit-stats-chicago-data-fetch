@@ -5,6 +5,7 @@ provider "registry.terraform.io/hashicorp/google" {
   version     = "4.27.0"
   constraints = "~> 4.27.0"
   hashes = [
+    "h1:bKba6xHbZTkhnOby8HgmlmofNUdvlMq1MTE2yAA4dIQ=",
     "h1:ht3rMVVE/AHBadDIPoMGS5jcbgnRMcgPKvqKrRQ33CU=",
     "zh:0ec41ae6810de7e1dbf8c8926523fb2cb6947f62932152c82c2c52ca2d9880be",
     "zh:28349b499a631e15a02eb9603c659ec894cd50149be6b90c3b35b11980a234a2",
@@ -25,6 +26,7 @@ provider "registry.terraform.io/hashicorp/google-beta" {
   version = "4.27.0"
   hashes = [
     "h1:bhwOVKWqunzGmg7FXlpagp73wK5klRXgPDJVjAHrylk=",
+    "h1:p4KPLatP5m6x4AeY+mvNBqWzqaoyjqqX3CrRBXnRXXE=",
     "zh:0b1e17291c64b4a932ef22300c316c3fe84a21c79c1fcdad9f92cc14144632e9",
     "zh:10c8f7bf1f6f4de8d687de7185e572d1234c39990a3374cd523013e00a9c3c95",
     "zh:2020ec32dea0fe05308cd0da068da49a5daa087453a494c041f1808131e1bc57",
@@ -37,24 +39,5 @@ provider "registry.terraform.io/hashicorp/google-beta" {
     "zh:e9ef158108f87ec6119b8abc1dfd35a7a4d9e29a798287f767613bc3bb16c59a",
     "zh:f569b65999264a9416862bca5cd2a6177d94ccb0424f3a4ef424428912b9cb3c",
     "zh:fc131aa32c057f937ca7e86a7eb1793ef9cae44af9d95dc122888427ea470b0d",
-  ]
-}
-
-provider "registry.terraform.io/hashicorp/local" {
-  version = "2.2.3"
-  hashes = [
-    "h1:KmHz81iYgw9Xn2L3Carc2uAzvFZ1XsE7Js3qlVeC77k=",
-    "zh:04f0978bb3e052707b8e82e46780c371ac1c66b689b4a23bbc2f58865ab7d5c0",
-    "zh:6484f1b3e9e3771eb7cc8e8bab8b35f939a55d550b3f4fb2ab141a24269ee6aa",
-    "zh:78a56d59a013cb0f7eb1c92815d6eb5cf07f8b5f0ae20b96d049e73db915b238",
-    "zh:78d5eefdd9e494defcb3c68d282b8f96630502cac21d1ea161f53cfe9bb483b3",
-    "zh:8aa9950f4c4db37239bcb62e19910c49e47043f6c8587e5b0396619923657797",
-    "zh:996beea85f9084a725ff0e6473a4594deb5266727c5f56e9c1c7c62ded6addbb",
-    "zh:9a7ef7a21f48fabfd145b2e2a4240ca57517ad155017e86a30860d7c0c109de3",
-    "zh:a63e70ac052aa25120113bcddd50c1f3cfe61f681a93a50cea5595a4b2cc3e1c",
-    "zh:a6e8d46f94108e049ad85dbed60354236dc0b9b5ec8eabe01c4580280a43d3b8",
-    "zh:bb112ce7efbfcfa0e65ed97fa245ef348e0fd5bfa5a7e4ab2091a9bd469f0a9e",
-    "zh:d7bec0da5c094c6955efed100f3fe22fca8866859f87c025be1760feb174d6d9",
-    "zh:fb9f271b72094d07cef8154cd3d50e9aa818a0ea39130bc193132ad7b23076fd",
   ]
 }

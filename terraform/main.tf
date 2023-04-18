@@ -1,5 +1,5 @@
 terraform {
-  required_version = "1.2.6"
+  required_version = "1.4.5"
   required_providers {
     google = {
       source  = "hashicorp/google"
@@ -134,6 +134,10 @@ data "google_service_account" "appspot_service_account" {
   account_id = "transit-stats-chicago@appspot.gserviceaccount.com"
 }
 
+data "google_service_account" "gen2_compute_user" {
+  account_id = "998544061327-compute@developer.gserviceaccount.com"
+}
+
 data "google_iam_role" "service_account_role" {
   name = "roles/iam.serviceAccountUser"
 }
@@ -144,13 +148,19 @@ resource "google_service_account_iam_member" "allow_build_agent_as_cloud_functio
   service_account_id = data.google_service_account.appspot_service_account.id
 }
 
+resource "google_service_account_iam_member" "allow_build_agent_as_cloud_functions_v2_service_user" {
+  member             = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
+  role               = data.google_iam_role.service_account_role.name
+  service_account_id = data.google_service_account.gen2_compute_user.id
+}
+
 resource "google_cloudbuild_trigger" "cloudbuild_trigger" {
   name               = "fetch-gtfs-pipeline-build"
   include_build_logs = "INCLUDE_BUILD_LOGS_WITH_STATUS"
   filename           = "cloudbuild.yaml"
 
   github {
-    name  = "transit-stats-chicago-gcp"
+    name  = "transit-stats-chicago-data-fetch"
     owner = "ajablonski"
     push {
       branch = "^main$"
