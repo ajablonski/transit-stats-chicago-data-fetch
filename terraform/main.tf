@@ -142,6 +142,16 @@ data "google_iam_role" "service_account_role" {
   name = "roles/iam.serviceAccountUser"
 }
 
+data "google_iam_role" "role_viewer" {
+  name = "roles/iam.roleViewer"
+}
+
+resource "google_project_iam_member" "allow_cloudbuild_role_viewer_access" {
+  member  = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
+  project = data.google_project.project.project_id
+  role    = data.google_iam_role.role_viewer.id
+}
+
 resource "google_service_account_iam_member" "allow_build_agent_as_cloud_functions_service_user" {
   member             = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
   role               = data.google_iam_role.service_account_role.name
