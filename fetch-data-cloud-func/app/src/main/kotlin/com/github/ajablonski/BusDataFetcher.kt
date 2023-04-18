@@ -4,6 +4,7 @@ import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.google.common.io.Resources
 import java.net.URI
+import java.net.URL
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -19,14 +20,15 @@ class BusDataFetcher(
     private val httpClient: HttpClient,
     private val storage: Storage,
     private val apiKey: String,
-    routeFile: Path? = Resources.getResource("bus_routes.txt").toURI().toPath()
+    routeFile: URL = Resources.getResource("bus_routes.txt")
 ) {
-    private val routeBatches = Files
-        .readAllLines(routeFile)
-        .drop(1)
-        .map { it.split(",")[0] }
-        .windowed(10, 10, true)
-        .map { it.joinToString(",") }
+    private val routeBatches =
+        routeFile.readText()
+            .split("\n")
+            .drop(1)
+            .map { it.split(",")[0] }
+            .windowed(10, 10, true)
+            .map { it.joinToString(",") }
 
     fun fetch(time: ZonedDateTime) {
         val trackerResponses = routeBatches.map {
