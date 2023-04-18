@@ -25,8 +25,7 @@ class BusDataFetcher(
     routeFile: URL = Resources.getResource("bus_routes.txt")
 ) {
     private val routeBatches =
-        InputStreamReader(routeFile.openStream())
-            .readLines()
+        Resources.readLines(routeFile, Charsets.UTF_8)
             .drop(1)
             .map { it.split(",")[0] }
             .windowed(10, 10, true)
