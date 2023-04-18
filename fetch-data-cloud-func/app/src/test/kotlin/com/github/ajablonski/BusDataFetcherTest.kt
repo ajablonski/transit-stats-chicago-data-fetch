@@ -28,10 +28,10 @@ internal class BusDataFetcherTest {
                     request.method() == "GET"
                             && request.uri().host == "www.ctabustracker.com"
                             && request.uri().path == "/bustime/api/v2/getvehicles"
-                            && queryParamMap["Key"] == fakeApiKey
+                            && queryParamMap["key"] == fakeApiKey
                             && queryParamMap["tmres"] == "s"
                             && queryParamMap["format"] == "json"
-                            && queryParamMap.containsKey("Rt")
+                            && queryParamMap.containsKey("rt")
 
                 },
                 any<HttpResponse.BodyHandler<String>>()
@@ -49,79 +49,79 @@ internal class BusDataFetcherTest {
 
         verify {
             httpClient.send(
-                match { it.uri().query.contains("Rt=1,2,3,4,X4,5,6,7,8,8A") },
+                match { it.uri().query.contains("rt=1,2,3,4,X4,5,6,7,8,8A") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("Rt=9,X9,10,11,12,J14,15,18,20,21") },
+                match { it.uri().query.contains("rt=9,X9,10,11,12,J14,15,18,20,21") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("Rt=22,24,26,28,29,31,30,34,35,36") },
+                match { it.uri().query.contains("rt=22,24,26,28,29,31,30,34,35,36") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("Rt=37,39,43,44,47,48,49,49B,X49,50") },
+                match { it.uri().query.contains("rt=37,39,43,44,47,48,49,49B,X49,50") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("Rt=51,52,52A,53,53A,54,54A,54B,55,55A") },
+                match { it.uri().query.contains("rt=51,52,52A,53,53A,54,54A,54B,55,55A") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("Rt=55N,56,57,59,60,62,62H,63,63W,65") },
+                match { it.uri().query.contains("rt=55N,56,57,59,60,62,62H,63,63W,65") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("Rt=66,67,68,70,71,72,73,74,75,76") },
+                match { it.uri().query.contains("rt=66,67,68,70,71,72,73,74,75,76") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("Rt=77,78,79,80,81,81W,82,84,95,85") },
+                match { it.uri().query.contains("rt=77,78,79,80,81,81W,82,84,95,85") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("Rt=85A,86,87,88,90,91,92,93,94,96") },
+                match { it.uri().query.contains("rt=85A,86,87,88,90,91,92,93,94,96") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("Rt=97,X98,100,103,106,108,111,111A,112,115") },
+                match { it.uri().query.contains("rt=97,X98,100,103,106,108,111,111A,112,115") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("Rt=119,120,121,124,125,126,130,134,135,136") },
+                match { it.uri().query.contains("rt=119,120,121,124,125,126,130,134,135,136") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("Rt=143,146,147,148,151,152,155,156,157,165") },
+                match { it.uri().query.contains("rt=143,146,147,148,151,152,155,156,157,165") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("Rt=169,171,172,192,201,206") },
+                match { it.uri().query.contains("rt=169,171,172,192,201,206") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }

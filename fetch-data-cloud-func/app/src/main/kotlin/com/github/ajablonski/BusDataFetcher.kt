@@ -69,8 +69,8 @@ class BusDataFetcher(
 
     companion object {
         private const val formatParam = "format"
-        private const val routeParam = "Rt"
-        private const val keyParam = "Key"
+        private const val routeParam = "rt"
+        private const val keyParam = "key"
         private const val timeResParam = "tmres"
         private const val jsonFormat = "json"
         private const val secondsTimeResolution = "s"
