@@ -8,7 +8,7 @@ steps:
       - gcloud
       - functions
       - deploy
-      - fetch-static-gtfs-data-gen2
+      - fetch-static-gtfs-data
       - --ingress-settings=internal-only
       - --gen2
       - --entry-point=com.github.ajablonski.FetchStaticGtfsData
