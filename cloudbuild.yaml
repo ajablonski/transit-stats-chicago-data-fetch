@@ -24,7 +24,8 @@ steps:
       - gcloud
       - functions
       - deploy
-      - fetch-realtime-gtfs-data-gen1
+      - fetch-realtime-gtfs-data
+      - --gen2
       - --ingress-settings=internal-only
       - --entry-point=com.github.ajablonski.FetchRealtimeGtfsData
       - --region=us-central1

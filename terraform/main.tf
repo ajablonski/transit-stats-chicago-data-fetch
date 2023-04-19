@@ -150,6 +150,12 @@ resource "google_secret_manager_secret_iam_binding" "grant_view_secret_to_functi
   secret_id = data.google_secret_manager_secret.gtfs_data_secret.id
 }
 
+resource "google_secret_manager_secret_iam_binding" "grant_view_secret_to_functions_gen2_user" {
+  members   = ["serviceAccount:${data.google_service_account.gen2_compute_user.email}"]
+  role      = data.google_iam_role.secret_viewer_role.id
+  secret_id = data.google_secret_manager_secret.gtfs_data_secret.id
+}
+
 # Cloud Build agent roles
 resource "google_project_service_identity" "cloudbuild_service_account" {
   provider = google-beta

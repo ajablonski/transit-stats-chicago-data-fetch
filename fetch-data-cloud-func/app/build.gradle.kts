@@ -34,9 +34,8 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.5")
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+kotlin {
+    jvmToolchain(JavaVersion.VERSION_17.majorVersion.toInt())
 }
 
 tasks.withType<DependencyUpdatesTask> {
