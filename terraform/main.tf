@@ -115,10 +115,25 @@ data "google_iam_role" "run_invoker" {
   name = "roles/run.invoker"
 }
 
+data "google_iam_role" "storage_admin" {
+  name = "roles/storage.objectAdmin"
+}
+
 resource "google_project_iam_member" "allow_compute_service_user_cloud_run_invoker" {
-  member = "serviceAccount:${data.google_service_account.gen2_compute_user.email}"
+  member  = "serviceAccount:${data.google_service_account.gen2_compute_user.email}"
   project = data.google_project.project.project_id
-  role = data.google_iam_role.run_invoker.id
+  role    = data.google_iam_role.run_invoker.id
+}
+
+resource "google_project_iam_member" "allow_compute_service_bucket_access" {
+  member  = "serviceAccount:${data.google_service_account.gen2_compute_user.email}"
+  project = data.google_project.project.project_id
+  role    = data.google_iam_role.storage_admin.id
+  condition {
+    expression  = "resource.name.startsWith(\"projects/_/buckets/${google_storage_bucket.gtfs_data.name}/\")"
+    description = "Allow access to ${google_storage_bucket.gtfs_data.name} bucket"
+    title       = "${google_storage_bucket.gtfs_data.name}_bucket_access"
+  }
 }
 
 data "google_iam_role" "secret_viewer_role" {
