@@ -8,6 +8,7 @@ terraform {
   }
   backend "gcs" {
     bucket = "tsc-terraform-state"
+    prefix = "vehicles-data-fetch"
   }
 }
 
