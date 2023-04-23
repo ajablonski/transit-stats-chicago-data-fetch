@@ -21,14 +21,12 @@ dependencies {
     implementation(platform("com.google.cloud:libraries-bom:26.12.0"))
 
     implementation("com.google.cloud:google-cloud-storage:2.22.0")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
     testImplementation("com.google.cloud.functions:functions-framework-api:1.0.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-    testImplementation("com.google.truth:truth:1.1.3")
-    testImplementation("org.mockito:mockito-core:5.3.0")
     testImplementation("com.google.guava:guava-testlib:31.1-jre")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("io.mockk:mockk:1.13.5")
