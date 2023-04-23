@@ -101,11 +101,6 @@ resource "google_cloud_scheduler_job" "fetch_realtime_gtfs_data_trigger" {
 
 data "google_project" "project" {}
 
-# Used for Gen1 Cloud Functions
-data "google_service_account" "appspot_service_account" {
-  account_id = "transit-stats-chicago@appspot.gserviceaccount.com"
-}
-
 # Used for Gen2 Cloud Functions
 # Also used as identity for invoking cloud functions from Pub/sub subscription
 data "google_service_account" "gen2_compute_user" {
@@ -145,12 +140,6 @@ data "google_secret_manager_secret" "gtfs_data_secret" {
   secret_id = "gtfs-secrets-cta"
 }
 
-resource "google_secret_manager_secret_iam_binding" "grant_view_secret_to_functions_user" {
-  members   = ["serviceAccount:${data.google_service_account.appspot_service_account.email}"]
-  role      = data.google_iam_role.secret_viewer_role.id
-  secret_id = data.google_secret_manager_secret.gtfs_data_secret.id
-}
-
 resource "google_secret_manager_secret_iam_binding" "grant_view_secret_to_functions_gen2_user" {
   members   = ["serviceAccount:${data.google_service_account.gen2_compute_user.email}"]
   role      = data.google_iam_role.secret_viewer_role.id
@@ -186,12 +175,6 @@ resource "google_project_iam_member" "allow_cloudbuild_role_viewer_access" {
   member  = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
   project = data.google_project.project.project_id
   role    = data.google_iam_role.role_viewer.id
-}
-
-resource "google_service_account_iam_member" "allow_build_agent_as_cloud_functions_service_user" {
-  member             = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
-  role               = data.google_iam_role.service_account_role.name
-  service_account_id = data.google_service_account.appspot_service_account.id
 }
 
 resource "google_service_account_iam_member" "allow_build_agent_as_cloud_functions_v2_service_user" {
