@@ -104,7 +104,7 @@ data "google_project" "project" {}
 # Used for Gen2 Cloud Functions
 # Also used as identity for invoking cloud functions from Pub/sub subscription
 data "google_service_account" "gen2_compute_user" {
-  account_id = "998544061327-compute@developer.gserviceaccount.com"
+  account_id = "${data.google_project.project.number}-compute@developer.gserviceaccount.com"
 }
 
 data "google_iam_role" "run_invoker" {
