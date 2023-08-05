@@ -126,6 +126,17 @@ resource "google_project_iam_member" "allow_compute_service_user_cloud_run_invok
   role    = data.google_iam_role.run_invoker.id
 }
 
+resource "google_project_iam_member" "allow_compute_service_user_bucket_access" {
+  member  = "serviceAccount:${data.google_service_account.gen2_compute_user.email}"
+  project = data.google_project.project.project_id
+  role    = data.google_iam_role.storage_admin.id
+  condition {
+    expression  = "resource.name.startsWith(\"projects/_/buckets/${google_storage_bucket.gtfs_data.name}/\")"
+    description = "Allow access to ${google_storage_bucket.gtfs_data.name} bucket"
+    title       = "${google_storage_bucket.gtfs_data.name}_bucket_access"
+  }
+}
+
 resource "google_project_iam_member" "allow_gtfs_function_user_bucket_access" {
   member  = "serviceAccount:${google_service_account.gtfs_fetch_user.email}"
   project = data.google_project.project.project_id
@@ -145,8 +156,11 @@ data "google_secret_manager_secret" "gtfs_data_secret" {
   secret_id = "gtfs-secrets-cta"
 }
 
-resource "google_secret_manager_secret_iam_binding" "grant_view_secret_to_functions_gen2_user" {
-  members   = ["serviceAccount:${google_service_account.gtfs_fetch_user.email}"]
+resource "google_secret_manager_secret_iam_binding" "grant_view_secret_to_shared_compute" {
+  members   = [
+    "serviceAccount:${data.google_service_account.gen2_compute_user.email}",
+    "serviceAccount:${google_service_account.gtfs_fetch_user.email}"
+  ]
   role      = data.google_iam_role.secret_viewer_role.id
   secret_id = data.google_secret_manager_secret.gtfs_data_secret.id
 }
