@@ -15,6 +15,7 @@ steps:
       - --region=us-central1
       - --source=fetch-data-cloud-func/app/build/libs
       - --trigger-topic=fetch-static-gtfs-data-triggers
+      - --run-service-account=gtfs-fetch@transit-stats-chicago.iam.gserviceaccount.com
       - --runtime=java17
       - --max-instances=1
     waitFor:

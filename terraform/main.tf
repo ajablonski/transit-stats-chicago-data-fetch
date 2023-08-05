@@ -1,5 +1,5 @@
 terraform {
-  required_version = "1.4.5"
+  required_version = "1.5.2"
   required_providers {
     google = {
       source  = "hashicorp/google"
@@ -107,6 +107,11 @@ data "google_service_account" "gen2_compute_user" {
   account_id = "${data.google_project.project.number}-compute@developer.gserviceaccount.com"
 }
 
+resource "google_service_account" "gtfs_fetch_user" {
+  account_id = "gtfs-fetch"
+  display_name = "GTFS Fetch Service User"
+}
+
 data "google_iam_role" "run_invoker" {
   name = "roles/run.invoker"
 }
@@ -121,8 +126,8 @@ resource "google_project_iam_member" "allow_compute_service_user_cloud_run_invok
   role    = data.google_iam_role.run_invoker.id
 }
 
-resource "google_project_iam_member" "allow_compute_service_bucket_access" {
-  member  = "serviceAccount:${data.google_service_account.gen2_compute_user.email}"
+resource "google_project_iam_member" "allow_gtfs_function_user_bucket_access" {
+  member  = "serviceAccount:${google_service_account.gtfs_fetch_user.email}"
   project = data.google_project.project.project_id
   role    = data.google_iam_role.storage_admin.id
   condition {
@@ -141,7 +146,7 @@ data "google_secret_manager_secret" "gtfs_data_secret" {
 }
 
 resource "google_secret_manager_secret_iam_binding" "grant_view_secret_to_functions_gen2_user" {
-  members   = ["serviceAccount:${data.google_service_account.gen2_compute_user.email}"]
+  members   = ["serviceAccount:${google_service_account.gtfs_fetch_user.email}"]
   role      = data.google_iam_role.secret_viewer_role.id
   secret_id = data.google_secret_manager_secret.gtfs_data_secret.id
 }
