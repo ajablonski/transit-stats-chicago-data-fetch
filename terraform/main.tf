@@ -1,5 +1,5 @@
 terraform {
-  required_version = "1.5.2"
+  required_version = "1.5.4"
   required_providers {
     google = {
       source  = "hashicorp/google"
@@ -108,7 +108,7 @@ data "google_service_account" "gen2_compute_user" {
 }
 
 resource "google_service_account" "gtfs_fetch_user" {
-  account_id = "gtfs-fetch"
+  account_id   = "gtfs-fetch"
   display_name = "GTFS Fetch Service User"
 }
 
@@ -137,15 +137,12 @@ resource "google_project_iam_member" "allow_compute_service_user_bucket_access" 
   }
 }
 
-resource "google_project_iam_member" "allow_gtfs_function_user_bucket_access" {
-  member  = "serviceAccount:${google_service_account.gtfs_fetch_user.email}"
-  project = data.google_project.project.project_id
-  role    = data.google_iam_role.storage_admin.id
-  condition {
-    expression  = "resource.name.startsWith(\"projects/_/buckets/${google_storage_bucket.gtfs_data.name}/\")"
-    description = "Allow access to ${google_storage_bucket.gtfs_data.name} bucket"
-    title       = "${google_storage_bucket.gtfs_data.name}_bucket_access"
-  }
+resource "google_storage_bucket_iam_binding" "allow_gtfs_function_user_bucket_access" {
+  role   = data.google_iam_role.storage_admin.id
+  bucket = google_storage_bucket.gtfs_data.id
+  members = ["serviceAccount:${google_service_account.gtfs_fetch_user.email}",
+    "serviceAccount:${data.google_service_account.gen2_compute_user.email}"
+  ]
 }
 
 data "google_iam_role" "secret_viewer_role" {
@@ -157,7 +154,7 @@ data "google_secret_manager_secret" "gtfs_data_secret" {
 }
 
 resource "google_secret_manager_secret_iam_binding" "grant_view_secret_to_shared_compute" {
-  members   = [
+  members = [
     "serviceAccount:${data.google_service_account.gen2_compute_user.email}",
     "serviceAccount:${google_service_account.gtfs_fetch_user.email}"
   ]
@@ -200,6 +197,12 @@ resource "google_service_account_iam_member" "allow_build_agent_as_cloud_functio
   member             = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
   role               = data.google_iam_role.service_account_role.name
   service_account_id = data.google_service_account.gen2_compute_user.id
+}
+
+resource "google_service_account_iam_member" "allow_build_agent_as_gtfs_service_user" {
+  member             = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
+  role               = data.google_iam_role.service_account_role.name
+  service_account_id = google_service_account.gtfs_fetch_user.id
 }
 
 resource "google_cloudbuild_trigger" "cloudbuild_trigger" {
