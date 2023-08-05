@@ -162,61 +162,11 @@ resource "google_secret_manager_secret_iam_binding" "grant_view_secret_to_shared
   secret_id = data.google_secret_manager_secret.gtfs_data_secret.id
 }
 
-# Cloud Build agent roles
-resource "google_project_service_identity" "cloudbuild_service_account" {
-  provider = google-beta
-  project  = data.google_project.project.project_id
-  service  = "cloudbuild.googleapis.com"
-}
-
-data "google_iam_role" "cloudfunctions_developer_role" {
-  name = "roles/cloudfunctions.developer"
-}
-
-resource "google_project_iam_member" "allow_cloudbuild_functions_access" {
-  member  = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
-  project = data.google_project.project.project_id
-  role    = data.google_iam_role.cloudfunctions_developer_role.id
-}
-
-data "google_iam_role" "service_account_role" {
-  name = "roles/iam.serviceAccountUser"
-}
-
-data "google_iam_role" "role_viewer" {
-  name = "roles/iam.roleViewer"
-}
-
-resource "google_project_iam_member" "allow_cloudbuild_role_viewer_access" {
-  member  = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
-  project = data.google_project.project.project_id
-  role    = data.google_iam_role.role_viewer.id
-}
-
-resource "google_service_account_iam_member" "allow_build_agent_as_cloud_functions_v2_service_user" {
-  member             = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
-  role               = data.google_iam_role.service_account_role.name
-  service_account_id = data.google_service_account.gen2_compute_user.id
-}
-
-resource "google_service_account_iam_member" "allow_build_agent_as_gtfs_service_user" {
-  member             = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
-  role               = data.google_iam_role.service_account_role.name
-  service_account_id = google_service_account.gtfs_fetch_user.id
-}
-
-resource "google_cloudbuild_trigger" "cloudbuild_trigger" {
-  name               = "fetch-gtfs-pipeline-build"
-  include_build_logs = "INCLUDE_BUILD_LOGS_WITH_STATUS"
-  filename           = "cloudbuild.yaml"
-
-  github {
-    name  = "transit-stats-chicago-data-fetch"
-    owner = "ajablonski"
-    push {
-      branch = "^main$"
-    }
-  }
-
-  service_account = ""
+module "build_pipeline" {
+  source     = "./modules/build_pipeline"
+  project_id = data.google_project.project.project_id
+  service_account_ids_used_by_build_agent = [
+    data.google_service_account.gen2_compute_user.id,
+    google_service_account.gtfs_fetch_user.id
+  ]
 }
