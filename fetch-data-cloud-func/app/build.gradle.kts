@@ -1,8 +1,8 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 plugins {
-    kotlin("jvm") version "1.8.20"
-    kotlin("plugin.serialization") version "1.8.20"
+    kotlin("jvm") version "1.9.0"
+    kotlin("plugin.serialization") version "1.9.0"
     id("com.github.ben-manes.versions") version "0.47.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
@@ -14,17 +14,17 @@ repositories {
 val invoker: Configuration by configurations.creating
 
 dependencies {
-    compileOnly("com.google.cloud.functions:functions-framework-api:1.0.4")
-    invoker("com.google.cloud.functions.invoker:java-function-invoker:1.2.1")
+    compileOnly("com.google.cloud.functions:functions-framework-api:1.1.0")
+    invoker("com.google.cloud.functions.invoker:java-function-invoker:1.3.0")
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    implementation(platform("com.google.cloud:libraries-bom:26.12.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.21.0"))
 
-    implementation("com.google.cloud:google-cloud-storage:2.22.0")
+    implementation("com.google.cloud:google-cloud-storage:2.26.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 
-    testImplementation("com.google.cloud.functions:functions-framework-api:1.0.4")
+    testImplementation("com.google.cloud.functions:functions-framework-api:1.1.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
     testImplementation("com.google.guava:guava-testlib:32.1.2-jre")
