@@ -90,7 +90,6 @@ X49,"X49","Western Express",3,http://www.transitchicago.com/bus/X49/,b71234,ffff
 94,"94","California",3,http://www.transitchicago.com/bus/94/,565a5c,ffffff
 96,"96","Lunt",3,http://www.transitchicago.com/bus/96/,565a5c,ffffff
 97,"97","Skokie",3,http://www.transitchicago.com/bus/97/,565a5c,ffffff
-X98,"X98","Avon Express",3,http://www.transitchicago.com/bus/X98/,b71234,ffffff
 100,"100","Jeffery Manor Express",3,http://www.transitchicago.com/bus/100/,b71234,ffffff
 103,"103","West 103rd",3,http://www.transitchicago.com/bus/103/,565a5c,ffffff
 106,"106","East 103rd",3,http://www.transitchicago.com/bus/106/,565a5c,ffffff
@@ -123,5 +122,5 @@ X98,"X98","Avon Express",3,http://www.transitchicago.com/bus/X98/,b71234,ffffff
 171,"171","U. of Chicago/Hyde Park",3,http://www.transitchicago.com/bus/171/,b71234,ffffff
 172,"172","U. of Chicago/Kenwood",3,http://www.transitchicago.com/bus/172/,565a5c,ffffff
 192,"192","University of Chicago Hospitals Express",3,http://www.transitchicago.com/bus/192/,565a5c,ffffff
-201,"201","Central/Ridge",3,http://www.transitchicago.com/bus/201/,b71234,ffffff
+201,"201","Central/Ridge",3,http://www.transitchicago.com/bus/201/,565a5c,ffffff
 206,"206","Evanston Circulator",3,http://www.transitchicago.com/bus/206/,565a5c,ffffff
