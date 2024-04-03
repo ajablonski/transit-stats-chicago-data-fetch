@@ -1,5 +1,5 @@
 steps:
-  - name: gradle:8.7-jdk17-alpine
+  - name: gradle:8.7-jdk21-alpine
     id: build
     entrypoint: gradle
     args: ['-p', 'fetch-data-cloud-func', 'shadowJar']
@@ -16,7 +16,7 @@ steps:
       - --source=fetch-data-cloud-func/app/build/libs
       - --trigger-topic=fetch-static-gtfs-data-triggers
       - --run-service-account=gtfs-fetch@transit-stats-chicago.iam.gserviceaccount.com
-      - --runtime=java17
+      - --runtime=java21
       - --max-instances=1
       - --memory=384MiB
     waitFor:
@@ -33,7 +33,7 @@ steps:
       - --region=us-central1
       - --source=fetch-data-cloud-func/app/build/libs
       - --trigger-topic=fetch-realtime-gtfs-data-triggers
-      - --runtime=java17
+      - --runtime=java21
       - --max-instances=1
       - --memory=384MiB
       - --set-secrets=/etc/secrets/gtfs_secrets.json=gtfs-secrets-cta:1
