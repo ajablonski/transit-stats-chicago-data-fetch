@@ -43,14 +43,10 @@ class FetchRealtimeGtfsDataTest {
         every { message.time } returns OffsetDateTime.parse("2022-08-21T20:00:00.000Z")
         messageHandler.accept(message)
         verify { mockRailDataFetcher.fetch() }
-        clearMocks(mockRailDataFetcher)
-        every { message.time } returns OffsetDateTime.parse("2022-08-21T20:01:00.000Z")
-        messageHandler.accept(message)
-        verify { mockRailDataFetcher.fetch() }
     }
 
     @Test
-    fun shouldFetchBusDataOnEvenMinuteTriggers() {
+    fun shouldFetchBusDataOnEveryTrigger() {
         every { message.time } returns OffsetDateTime.parse("2022-08-21T20:00:00.000Z")
         messageHandler.accept(message)
         verify {
@@ -58,14 +54,10 @@ class FetchRealtimeGtfsDataTest {
                 ZonedDateTime.parse("2022-08-21T20:00:00.000Z")
             )
         }
-        clearMocks(mockBusDataFetcher)
-        every { message.time } returns OffsetDateTime.parse("2022-08-21T20:01:00.000Z")
-        messageHandler.accept(message)
-        verify(exactly = 0) { mockBusDataFetcher.fetch(any()) }
     }
 
     @Test
-    fun shouldLogProgressWhenFetchingBus() {
+    fun shouldLogProgressWhenFetchingData() {
         every { message.time } returns OffsetDateTime.parse("2022-08-21T20:00:00Z")
 
         messageHandler.accept(message)
@@ -79,27 +71,7 @@ class FetchRealtimeGtfsDataTest {
             assertThat(level).isEqualTo(Level.INFO)
         }
         logHandler.storedLogRecords[2].apply {
-            assertThat(message).isEqualTo("Fetching bus data for minute 0")
-            assertThat(level).isEqualTo(Level.INFO)
-        }
-    }
-
-    @Test
-    fun shouldLogProgressWhenNotFetchingBus() {
-        every { message.time } returns OffsetDateTime.parse("2022-08-21T20:01:00.000Z")
-
-        messageHandler.accept(message)
-
-        logHandler.storedLogRecords[0].apply {
-            assertThat(message).isEqualTo("Retrieved trigger event with timestamp 2022-08-21T20:01Z")
-            assertThat(level).isEqualTo(Level.INFO)
-        }
-        logHandler.storedLogRecords[1].apply {
-            assertThat(message).isEqualTo("Fetching rail data")
-            assertThat(level).isEqualTo(Level.INFO)
-        }
-        logHandler.storedLogRecords[2].apply {
-            assertThat(message).isEqualTo("Skipping bus data for minute 1")
+            assertThat(message).isEqualTo("Fetching bus data")
             assertThat(level).isEqualTo(Level.INFO)
         }
     }

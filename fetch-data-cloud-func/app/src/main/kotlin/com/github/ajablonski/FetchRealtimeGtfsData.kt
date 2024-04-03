@@ -37,11 +37,9 @@ class FetchRealtimeGtfsData(secretPath: Path = defaultSecretPath) : CloudEventsF
         logger.info("Fetching rail data")
         railDataFetcher.fetch()
         val time = payload?.time
-        if (time != null && time.minute % 2 == 0) {
-            logger.info("Fetching bus data for minute ${time.minute}")
+        if (time != null) {
+            logger.info("Fetching bus data")
             busDataFetcher.fetch(time.toZonedDateTime())
-        } else {
-            logger.info("Skipping bus data for minute ${time?.minute}")
         }
     }
 

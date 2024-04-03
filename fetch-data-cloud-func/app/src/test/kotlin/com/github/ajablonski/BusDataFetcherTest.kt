@@ -103,25 +103,25 @@ internal class BusDataFetcherTest {
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("rt=97,X98,100,103,106,108,111,111A,112,115") },
+                match { it.uri().query.contains("rt=97,100,103,106,108,111,111A,112,115,119") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("rt=119,120,121,124,125,126,130,134,135,136") },
+                match { it.uri().query.contains("rt=120,121,124,125,126,130,134,135,136,143") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("rt=143,146,147,148,151,152,155,156,157,165") },
+                match { it.uri().query.contains("rt=146,147,148,151,152,155,156,157,165,169") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
         verify {
             httpClient.send(
-                match { it.uri().query.contains("rt=169,171,172,192,201,206") },
+                match { it.uri().query.contains("rt=171,172,192,201,206") },
                 any<HttpResponse.BodyHandler<String>>()
             )
         }
