@@ -76,7 +76,7 @@ internal class RailDataFetcherTest {
             storage.create(
                 BlobInfo
                     .newBuilder(
-                        Constants.bucketId,
+                        Constants.BUCKET_ID,
                         "realtime/raw/rail/2022/08/06/2022-08-06T18:54:12.json"
                     )
                     .setContentType("application/json")

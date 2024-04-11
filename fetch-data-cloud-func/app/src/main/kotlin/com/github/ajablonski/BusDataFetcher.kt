@@ -1,22 +1,17 @@
 package com.github.ajablonski
 
-import com.google.api.client.util.IOUtils
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.google.common.io.Resources
-import java.io.InputStreamReader
 import java.net.URI
 import java.net.URL
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.nio.file.Files
-import java.nio.file.Path
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.logging.Logger
-import kotlin.io.path.toPath
 
 class BusDataFetcher(
     private val httpClient: HttpClient,
@@ -46,9 +41,9 @@ class BusDataFetcher(
         val filename = time.withZoneSameInstant(centralTime)
             .format(DateTimeFormatter.ofPattern("'realtime/raw/bus'/YYYY/MM/dd/YYYY-MM-dd'T'HH:mm:ss'.json'"))
 
-        logger.info("Storing bus data at gs://${Constants.bucketId}/$filename")
+        logger.info("Storing bus data at gs://${Constants.BUCKET_ID}/$filename")
         storage.create(
-            BlobInfo.newBuilder(Constants.bucketId, filename).build(),
+            BlobInfo.newBuilder(Constants.BUCKET_ID, filename).build(),
             trackerResponses.joinToString(",\n", prefix = "[", postfix = "]") { it.body() }.toByteArray(Charsets.UTF_8)
         )
         logger.info("Bus data successfully stored")
@@ -57,27 +52,27 @@ class BusDataFetcher(
 
     private fun getUri(routeBatchString: String): URI {
         val queryParams = mapOf(
-            formatParam to jsonFormat,
-            routeParam to routeBatchString,
-            keyParam to apiKey,
-            timeResParam to secondsTimeResolution
+            FORMAT_PARAM to JSON_FORMAT,
+            ROUTE_PARAM to routeBatchString,
+            KEY_PARAM to apiKey,
+            TIME_RES_PARAM to SECONDS_TIME_RESOLUTION
         )
         val queryString = queryParams.map { "${it.key}=${it.value}" }.joinToString("&")
 
-        return URI("${ctaBusTrackerUrl}?$queryString")
+        return URI("${CTA_BUS_TRACKER_URL}?$queryString")
     }
 
     companion object {
-        private const val formatParam = "format"
-        private const val routeParam = "rt"
-        private const val keyParam = "key"
-        private const val timeResParam = "tmres"
-        private const val jsonFormat = "json"
-        private const val secondsTimeResolution = "s"
+        private const val FORMAT_PARAM = "format"
+        private const val ROUTE_PARAM = "rt"
+        private const val KEY_PARAM = "key"
+        private const val TIME_RES_PARAM = "tmres"
+        private const val JSON_FORMAT = "json"
+        private const val SECONDS_TIME_RESOLUTION = "s"
         private val centralTime = ZoneId.of("America/Chicago")
 
         val logger: Logger = Logger.getLogger(BusDataFetcher::class.java.name)
-        private const val ctaBusTrackerUrl = "https://www.ctabustracker.com/bustime/api/v2/getvehicles"
+        private const val CTA_BUS_TRACKER_URL = "https://www.ctabustracker.com/bustime/api/v2/getvehicles"
 
     }
 }

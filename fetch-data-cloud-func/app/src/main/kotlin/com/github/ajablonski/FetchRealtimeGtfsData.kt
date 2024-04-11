@@ -1,17 +1,14 @@
 package com.github.ajablonski
 
-import com.google.cloud.functions.BackgroundFunction
+import com.github.ajablonski.serdes.Secrets
 import com.google.cloud.functions.CloudEventsFunction
-import com.google.cloud.functions.Context
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
 import io.cloudevents.CloudEvent
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.jetbrains.annotations.TestOnly
 import java.net.http.HttpClient
 import java.nio.file.Path
-import java.time.ZonedDateTime
 import java.util.logging.Logger
 import kotlin.io.path.readText
 

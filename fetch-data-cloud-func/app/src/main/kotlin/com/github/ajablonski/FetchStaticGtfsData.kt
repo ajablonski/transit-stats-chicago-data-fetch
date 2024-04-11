@@ -1,6 +1,6 @@
 package com.github.ajablonski
 
-import com.github.ajablonski.Constants.ETagHeadder
+import com.github.ajablonski.Constants.ETAG_HEADER
 import com.google.cloud.functions.CloudEventsFunction
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
@@ -29,7 +29,7 @@ class FetchStaticGtfsData : CloudEventsFunction {
         val lastDownloadedETag = fetchLastRetrievedGtfsEtag()
             .also {
                 if (it == null) {
-                    logger.info("Could not find $lastDownloadedETagFileName file, will download current GTFS zip file.")
+                    logger.info("Could not find $LAST_DOWNLOADED_ETAG_FILENAME file, will download current GTFS zip file.")
                 } else {
                     logger.info("Most recently fetched static GTFS zip file had ETag $it")
                 }
@@ -44,14 +44,14 @@ class FetchStaticGtfsData : CloudEventsFunction {
         }
 
         val gtfsStaticDataResponse = httpClient.send(
-            HttpRequest.newBuilder(URI.create(gtfsUrl)).GET().build(),
+            HttpRequest.newBuilder(URI.create(GTFS_URL)).GET().build(),
             HttpResponse.BodyHandlers.ofInputStream()
         )
 
         val filePath = generateFilePath(gtfsStaticDataResponse)
 
-        logger.info("Downloading newer version and storing at gs://${Constants.bucketId}/$filePath")
-        storage.createFrom(BlobInfo.newBuilder(Constants.bucketId, filePath).build(), gtfsStaticDataResponse.body())
+        logger.info("Downloading newer version and storing at gs://${Constants.BUCKET_ID}/$filePath")
+        storage.createFrom(BlobInfo.newBuilder(Constants.BUCKET_ID, filePath).build(), gtfsStaticDataResponse.body())
         logger.info("Successfully saved file, updating ETag")
 
         storage.create(lastDownloadedETagBlobInfo, currentETag.toByteArray(Charsets.UTF_8))
@@ -67,7 +67,7 @@ class FetchStaticGtfsData : CloudEventsFunction {
 
         val subPath = lastModifiedDateTime.format(DateTimeFormatter.ofPattern("'static'/yyyy/MM/dd"))
         val prefix = "$subPath/gtfs_"
-        var blobPage = storage.list(Constants.bucketId, Storage.BlobListOption.prefix(prefix))
+        var blobPage = storage.list(Constants.BUCKET_ID, Storage.BlobListOption.prefix(prefix))
         var largestIndex = -1
         while (blobPage != null) {
             largestIndex = maxOf(blobPage
@@ -83,11 +83,11 @@ class FetchStaticGtfsData : CloudEventsFunction {
 
     private fun fetchCurrentGtfsEtag(): String {
         val headRequestHeaders = httpClient.send(
-            HttpRequest.newBuilder(URI.create(gtfsUrl)).method("HEAD", HttpRequest.BodyPublishers.noBody()).build(),
+            HttpRequest.newBuilder(URI.create(GTFS_URL)).method("HEAD", HttpRequest.BodyPublishers.noBody()).build(),
             HttpResponse.BodyHandlers.ofString()
         ).headers()
 
-        return headRequestHeaders.firstValue(ETagHeadder).getOrDefault("<No ETag Provided>")
+        return headRequestHeaders.firstValue(ETAG_HEADER).getOrDefault("<No ETag Provided>")
     }
 
     private fun fetchLastRetrievedGtfsEtag(): String? {
@@ -97,9 +97,9 @@ class FetchStaticGtfsData : CloudEventsFunction {
     }
 
     companion object {
-        const val gtfsUrl = "https://www.transitchicago.com/downloads/sch_data/google_transit.zip"
-        private const val lastDownloadedETagFileName = "static/latest.txt"
-        private val lastDownloadedETagBlobInfo = BlobInfo.newBuilder(Constants.bucketId, lastDownloadedETagFileName).build()
+        const val GTFS_URL = "https://www.transitchicago.com/downloads/sch_data/google_transit.zip"
+        private const val LAST_DOWNLOADED_ETAG_FILENAME = "static/latest.txt"
+        private val lastDownloadedETagBlobInfo = BlobInfo.newBuilder(Constants.BUCKET_ID, LAST_DOWNLOADED_ETAG_FILENAME).build()
         private val logger = Logger.getLogger(FetchStaticGtfsData::class.java.name)
     }
 }

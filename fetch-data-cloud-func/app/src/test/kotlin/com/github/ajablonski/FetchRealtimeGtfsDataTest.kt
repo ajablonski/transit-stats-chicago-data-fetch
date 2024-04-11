@@ -1,11 +1,9 @@
 package com.github.ajablonski
 
-import com.google.cloud.functions.Context
 import com.google.cloud.storage.Storage
 import com.google.common.testing.TestLogHandler
 import io.cloudevents.CloudEvent
 import io.cloudevents.CloudEventData
-import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -16,7 +14,6 @@ import org.junit.jupiter.api.Test
 import java.net.http.HttpClient
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
-import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.io.path.toPath

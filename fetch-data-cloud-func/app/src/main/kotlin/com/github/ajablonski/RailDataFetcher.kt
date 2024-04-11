@@ -1,8 +1,8 @@
 package com.github.ajablonski
 
+import com.github.ajablonski.serdes.PartialLocationResponse
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.net.URI
 import java.net.http.HttpClient
@@ -24,11 +24,11 @@ class RailDataFetcher(private val httpClient: HttpClient, private val storage: S
 
         val timestampLocalDateTime = LocalDateTime.parse(timestamp)
         val prefix = timestampLocalDateTime.format(DateTimeFormatter.ofPattern("'realtime/raw/rail'/YYYY/MM/dd"))
-        logger.info("Storing rail data at gs://${Constants.bucketId}/$prefix/$timestamp.json")
+        logger.info("Storing rail data at gs://${Constants.BUCKET_ID}/$prefix/$timestamp.json")
         storage.create(
             BlobInfo
                 .newBuilder(
-                    Constants.bucketId,
+                    Constants.BUCKET_ID,
                     "$prefix/$timestamp.json"
                 )
                 .setContentType("application/json")
@@ -44,21 +44,21 @@ class RailDataFetcher(private val httpClient: HttpClient, private val storage: S
 
     private fun generateUri(): URI {
         val queryParams = mapOf(
-            routeParam to routesValue,
-            outputTypeParam to outputTypeValue,
-            keyParam to apiKey
+            ROUTE_PARAM to routesValue,
+            OUTPUT_TYPE_PARAM to OUTPUT_TYPE_VALUE,
+            KEY_PARAM to apiKey
         )
 
         val queryString = queryParams.map { "${it.key}=${it.value}" }.joinToString("&")
-        return URI("${baseUrl}?$queryString")
+        return URI("${BASE_URL}?$queryString")
     }
 
     companion object {
-        private const val baseUrl = "https://lapi.transitchicago.com/api/1.0/ttpositions.aspx"
-        private const val routeParam = "rt"
-        private const val outputTypeParam = "outputType"
-        private const val outputTypeValue = "JSON"
-        private const val keyParam = "key"
+        private const val BASE_URL = "https://lapi.transitchicago.com/api/1.0/ttpositions.aspx"
+        private const val ROUTE_PARAM = "rt"
+        private const val OUTPUT_TYPE_PARAM = "outputType"
+        private const val OUTPUT_TYPE_VALUE = "JSON"
+        private const val KEY_PARAM = "key"
         private val timeZone = ZoneId.of("America/Chicago")
         private val routesValue = listOf("Red", "Blue", "Brn", "G", "Org", "P", "Pink", "Y").joinToString(",")
         private val json = Json { ignoreUnknownKeys = true }

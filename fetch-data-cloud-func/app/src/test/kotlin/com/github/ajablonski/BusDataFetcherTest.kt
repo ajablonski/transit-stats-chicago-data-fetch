@@ -8,7 +8,6 @@ import io.mockk.verify
 import org.junit.jupiter.api.Test
 import java.net.http.HttpClient
 import java.net.http.HttpResponse
-import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
@@ -133,7 +132,7 @@ internal class BusDataFetcherTest {
 
         verify {
             storage.create(
-                BlobInfo.newBuilder(Constants.bucketId, "realtime/raw/bus/2022/08/21/2022-08-21T20:02:03.json").build(),
+                BlobInfo.newBuilder(Constants.BUCKET_ID, "realtime/raw/bus/2022/08/21/2022-08-21T20:02:03.json").build(),
                 match<ByteArray> { it.size == sampleResponse.length * 13 + 12 * 2 + 2 }
             )
         }

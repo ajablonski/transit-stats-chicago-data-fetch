@@ -1,4 +1,4 @@
-package com.github.ajablonski
+package com.github.ajablonski.serdes
 
 import kotlinx.serialization.Serializable
 
