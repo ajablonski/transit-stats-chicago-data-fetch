@@ -3,14 +3,15 @@ package com.github.ajablonski
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.google.common.testing.TestLogHandler
-import io.mockk.every
+import io.ktor.client.engine.mock.*
+import io.ktor.http.*
+import io.ktor.utils.io.*
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import java.net.http.HttpClient
-import java.net.http.HttpResponse
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.logging.Level
@@ -18,59 +19,36 @@ import java.util.logging.Logger
 
 internal class RailDataFetcherTest {
     private val storage = mockk<Storage>(relaxed = true)
-    private val httpClient = mockk<HttpClient> {
-        every {
-            send(
-                match { request ->
-                    val queryParamMap = request
-                        .uri()
-                        .query
-                        .split("&")
-                        .map { queryPart -> queryPart.split("=").let { it[0] to it[1] } }
-                        .groupBy { it.first }
-                        .mapValues { it.value.first().second }
-                    queryParamMap["rt"]!!.split(",")
-                        .containsAll(setOf("Red", "Blue", "Brn", "G", "Org", "P", "Pink"))
-                            && queryParamMap["outputType"] == "JSON"
-                            && queryParamMap["key"] == trainTrackerApiKey
-                            && request.method() == "GET"
-                },
-                any<HttpResponse.BodyHandler<String>>()
+    private val httpClientEngine = MockEngine { request ->
+        if (request.method == HttpMethod.Get
+            && request.url.parameters["key"] == trainTrackerApiKey
+            && request.url.parameters["outputType"] == "JSON"
+            && request.url.parameters["rt"]!!.split(",")
+                .containsAll(setOf("Red", "Blue", "Brn", "G", "Org", "P", "Pink"))) {
+            respond(
+                content = ByteReadChannel(testData),
+                status = HttpStatusCode.OK
             )
-        }.returns(mockk<HttpResponse<String>> {
-            every { body() }.returns(testData)
-        })
+        } else {
+            respondBadRequest()
+        }
+
     }
-    private val railDataFetcher = RailDataFetcher(httpClient, storage, trainTrackerApiKey)
+    private val railDataFetcher = RailDataFetcher(httpClientEngine, storage, trainTrackerApiKey)
 
     @Test
     fun shouldCallRealTimeApiWithCorrectParameters() {
-        railDataFetcher.fetch()
+        runBlocking { railDataFetcher.fetch() }
 
-        verify {
-            httpClient.send(
-                match { request ->
-                    val queryParamMap = request
-                        .uri()
-                        .query
-                        .split("&")
-                        .map { queryPart -> queryPart.split("=").let { it[0] to it[1] } }
-                        .groupBy { it.first }
-                        .mapValues { it.value.first().second }
-                    queryParamMap["rt"]!!.split(",")
-                        .containsAll(setOf("Red", "Blue", "Brn", "G", "Org", "P", "Pink", "Y"))
-                            && queryParamMap["outputType"] == "JSON"
-                            && queryParamMap["key"] == trainTrackerApiKey
-                            && request.method() == "GET"
-                },
-                any<HttpResponse.BodyHandler<String>>()
-            )
-        }
+        assertThat(httpClientEngine.requestHistory[0].method).isEqualTo(HttpMethod.Get)
+        assertThat(httpClientEngine.requestHistory[0].url.parameters["rt"]!!.split(",")).containsAll(setOf("Red", "Blue", "Brn", "G", "Org", "P", "Pink"))
+        assertThat(httpClientEngine.requestHistory[0].url.parameters["outputType"]).isEqualTo("JSON")
+        assertThat(httpClientEngine.requestHistory[0].url.parameters["key"]).isEqualTo(trainTrackerApiKey)
     }
 
     @Test
     fun shouldSaveResultInTimestampedFile() {
-        railDataFetcher.fetch()
+        runBlocking { railDataFetcher.fetch() }
 
         verify {
             storage.create(

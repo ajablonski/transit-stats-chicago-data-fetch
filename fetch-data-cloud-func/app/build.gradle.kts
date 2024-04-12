@@ -11,6 +11,7 @@ repositories {
     mavenCentral()
 }
 
+val ktorVersion: String by project
 val invoker: Configuration by configurations.creating
 
 dependencies {
@@ -24,11 +25,16 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+
     testImplementation("com.google.cloud.functions:functions-framework-api:1.1.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testImplementation("com.google.guava:guava-testlib:33.1.0-jre")
     testImplementation("org.assertj:assertj-core:3.25.3")
     testImplementation("io.mockk:mockk:1.13.10")
+
+    testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -38,7 +44,7 @@ kotlin {
 }
 
 tasks.withType<DependencyUpdatesTask> {
-    val preReleaseVersion = "^.*(rc-?\\d*|m\\d+|-Beta\\d*)$".toRegex(RegexOption.IGNORE_CASE)
+    val preReleaseVersion = "^.*(rc-?\\d*|m\\d+|-[Bb]eta-?\\d*)$".toRegex(RegexOption.IGNORE_CASE)
     rejectVersionIf {
         preReleaseVersion.matches(candidate.version)
     }

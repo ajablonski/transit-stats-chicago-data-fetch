@@ -3,21 +3,24 @@ package com.github.ajablonski
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.google.common.io.Resources
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.*
+import io.ktor.client.request.*
+import io.ktor.http.*
 import java.net.URI
 import java.net.URL
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.logging.Logger
 
 class BusDataFetcher(
-    private val httpClient: HttpClient,
+    private val httpClientEngine: HttpClientEngine,
     private val storage: Storage,
     private val apiKey: String,
-    routeFile: URL = Resources.getResource(BusDataFetcher::class.java, "/bus_routes.txt")
+    routeFile: URL = Resources.getResource(BusDataFetcher::class.java, "/bus_routes.txt"),
+    private val httpClient: HttpClient = HttpClient(httpClientEngine) {}
 ) {
     private val routeBatches =
         Resources.readLines(routeFile, Charsets.UTF_8)
@@ -26,16 +29,11 @@ class BusDataFetcher(
             .windowed(10, 10, true)
             .map { it.joinToString(",") }
 
-    fun fetch(time: ZonedDateTime) {
-        val trackerResponses = routeBatches.map {
-            val uri = getUri(it)
-            httpClient.send(
-                HttpRequest.newBuilder()
-                    .uri(uri)
-                    .GET()
-                    .build(),
-                HttpResponse.BodyHandlers.ofString()
-            )
+    suspend fun fetch(time: ZonedDateTime) {
+        val trackerResponseBodies = routeBatches.map {
+            httpClient.get(
+                getUrl(it)
+            ).body<String>()
         }
 
         val filename = time.withZoneSameInstant(centralTime)
@@ -44,13 +42,13 @@ class BusDataFetcher(
         logger.info("Storing bus data at gs://${Constants.BUCKET_ID}/$filename")
         storage.create(
             BlobInfo.newBuilder(Constants.BUCKET_ID, filename).build(),
-            trackerResponses.joinToString(",\n", prefix = "[", postfix = "]") { it.body() }.toByteArray(Charsets.UTF_8)
+            trackerResponseBodies.joinToString(",\n", prefix = "[", postfix = "]").toByteArray(Charsets.UTF_8)
         )
         logger.info("Bus data successfully stored")
     }
 
 
-    private fun getUri(routeBatchString: String): URI {
+    private fun getUrl(routeBatchString: String): Url {
         val queryParams = mapOf(
             FORMAT_PARAM to JSON_FORMAT,
             ROUTE_PARAM to routeBatchString,
@@ -59,7 +57,7 @@ class BusDataFetcher(
         )
         val queryString = queryParams.map { "${it.key}=${it.value}" }.joinToString("&")
 
-        return URI("${CTA_BUS_TRACKER_URL}?$queryString")
+        return Url(URI("${CTA_BUS_TRACKER_URL}?$queryString"))
     }
 
     companion object {

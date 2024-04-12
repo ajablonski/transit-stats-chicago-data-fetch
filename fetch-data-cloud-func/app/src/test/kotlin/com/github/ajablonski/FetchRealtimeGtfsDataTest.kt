@@ -4,14 +4,13 @@ import com.google.cloud.storage.Storage
 import com.google.common.testing.TestLogHandler
 import io.cloudevents.CloudEvent
 import io.cloudevents.CloudEventData
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.net.http.HttpClient
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import java.util.logging.Level
@@ -21,14 +20,12 @@ import kotlin.io.path.toPath
 class FetchRealtimeGtfsDataTest {
     private val mockStorage = mockk<Storage>(relaxed = true) {}
     private lateinit var messageHandler: FetchRealtimeGtfsData
-    private val mockHttpClient = mockk<HttpClient>(relaxed = true)
     private val mockRailDataFetcher = mockk<RailDataFetcher>(relaxed = true)
     private val mockBusDataFetcher = mockk<BusDataFetcher>(relaxed = true)
 
     @BeforeEach
     fun setUp() {
         messageHandler = FetchRealtimeGtfsData(ClassLoader.getSystemResource("testsecrets.json").toURI().toPath())
-        messageHandler.httpClient = mockHttpClient
         messageHandler.storage = mockStorage
         messageHandler.railDataFetcher = mockRailDataFetcher
         messageHandler.busDataFetcher = mockBusDataFetcher
@@ -39,14 +36,14 @@ class FetchRealtimeGtfsDataTest {
     fun shouldFetchRailDataOnEveryTrigger() {
         every { message.time } returns OffsetDateTime.parse("2022-08-21T20:00:00.000Z")
         messageHandler.accept(message)
-        verify { mockRailDataFetcher.fetch() }
+        coVerify { mockRailDataFetcher.fetch() }
     }
 
     @Test
     fun shouldFetchBusDataOnEveryTrigger() {
         every { message.time } returns OffsetDateTime.parse("2022-08-21T20:00:00.000Z")
         messageHandler.accept(message)
-        verify {
+        coVerify {
             mockBusDataFetcher.fetch(
                 ZonedDateTime.parse("2022-08-21T20:00:00.000Z")
             )

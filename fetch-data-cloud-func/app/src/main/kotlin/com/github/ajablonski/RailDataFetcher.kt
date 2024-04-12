@@ -3,22 +3,26 @@ package com.github.ajablonski
 import com.github.ajablonski.serdes.PartialLocationResponse
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.*
+import io.ktor.client.request.*
+import io.ktor.http.*
 import kotlinx.serialization.json.Json
 import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.logging.Logger
 
-class RailDataFetcher(private val httpClient: HttpClient, private val storage: Storage, private val apiKey: String) {
-    fun fetch() {
-        val uri = generateUri()
-
-        val responseBody =
-            httpClient.send(HttpRequest.newBuilder(uri).GET().build(), HttpResponse.BodyHandlers.ofString()).body()
+class RailDataFetcher(
+    private val httpClientEngine: HttpClientEngine,
+    private val storage: Storage,
+    private val apiKey: String,
+    private val httpClient: HttpClient = HttpClient(httpClientEngine)
+) {
+    suspend fun fetch() {
+        val responseBody = httpClient.get(generateUri()).body<String>()
 
         val timestamp = json.decodeFromString<PartialLocationResponse>(responseBody).ctatt.tmst
 
@@ -42,7 +46,7 @@ class RailDataFetcher(private val httpClient: HttpClient, private val storage: S
         logger.info("Rail data successfully stored")
     }
 
-    private fun generateUri(): URI {
+    private fun generateUri(): Url {
         val queryParams = mapOf(
             ROUTE_PARAM to routesValue,
             OUTPUT_TYPE_PARAM to OUTPUT_TYPE_VALUE,
@@ -50,7 +54,7 @@ class RailDataFetcher(private val httpClient: HttpClient, private val storage: S
         )
 
         val queryString = queryParams.map { "${it.key}=${it.value}" }.joinToString("&")
-        return URI("${BASE_URL}?$queryString")
+        return Url(URI("${BASE_URL}?$queryString"))
     }
 
     companion object {

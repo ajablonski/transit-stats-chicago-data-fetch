@@ -9,6 +9,9 @@ import com.google.cloud.storage.Storage
 import com.google.common.testing.TestLogHandler
 import io.cloudevents.CloudEvent
 import io.cloudevents.CloudEventData
+import io.ktor.client.engine.mock.*
+import io.ktor.http.*
+import io.ktor.utils.io.*
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -18,10 +21,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.InputStream
-import java.net.http.HttpClient
-import java.net.http.HttpHeaders
-import java.net.http.HttpResponse
-import java.net.http.HttpResponse.BodyHandler
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -30,32 +29,27 @@ import java.util.logging.Logger
 
 class FetchStaticGtfsDataTest {
     private lateinit var messageHandler: FetchStaticGtfsData
-    private val mockHttpClient = mockk<HttpClient>(relaxed = true) {
-        every {
-            send(
-                    match { it.method() == "HEAD" && it.uri().toString() == FetchStaticGtfsData.GTFS_URL },
-                    any<BodyHandler<String>>()
-            ).headers()
-        } returns HttpHeaders.of(
-                mapOf(
-                        ETAG_HEADER to listOf(sampleETag2),
-                        "Last-Modified" to listOf("Thu, 28 Jul 2022 23:42:33 GMT")
+    private val mockHttpEngine = MockEngine { request ->
+        if (request.method == HttpMethod.Head && request.url.toString() == FetchStaticGtfsData.GTFS_URL) {
+            respond(
+                content = ByteReadChannel.Empty,
+                status = HttpStatusCode.OK,
+                headers = headersOf(
+                    ETAG_HEADER to listOf(sampleETag2),
+                    "Last-Modified" to listOf("Thu, 28 Jul 2022 23:42:33 GMT")
                 )
-        ) { _, _ -> true }
-
-        every {
-            send(
-                    match { it.method() == "GET" && it.uri().toString() == FetchStaticGtfsData.GTFS_URL },
-                    any<BodyHandler<InputStream>>()
             )
-        } returns mockk<HttpResponse<InputStream>> {
-            every { body() }.returns(testBody)
-            every { headers() }.returns(HttpHeaders.of(
-                    mapOf(
-                            ETAG_HEADER to listOf(sampleETag2),
-                            "Last-Modified" to listOf("Thu, 28 Jul 2022 23:42:33 GMT")
-                    )
-            ) { _, _ -> true })
+        } else if (request.method == HttpMethod.Get && request.url.toString() == FetchStaticGtfsData.GTFS_URL) {
+            respond(
+                content = ByteReadChannel(testBody),
+                status = HttpStatusCode.OK,
+                headers = headersOf(
+                    ETAG_HEADER to listOf(sampleETag2),
+                    "Last-Modified" to listOf("Thu, 28 Jul 2022 23:42:33 GMT")
+                )
+            )
+        } else {
+            respondBadRequest()
         }
     }
     private val mockStorage = mockk<Storage>(relaxed = true) {
@@ -67,7 +61,7 @@ class FetchStaticGtfsDataTest {
     @BeforeEach
     fun setUp() {
         messageHandler = FetchStaticGtfsData()
-        messageHandler.httpClient = mockHttpClient
+        messageHandler.httpClientEngine = mockHttpEngine
         messageHandler.storage = mockStorage
         logHandler.clear()
     }
@@ -81,11 +75,11 @@ class FetchStaticGtfsDataTest {
         messageHandler.accept(message)
 
         assertThat(logHandler.storedLogRecords[0])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Most recently fetched static GTFS zip file had ETag $sampleETag1"
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Most recently fetched static GTFS zip file had ETag $sampleETag1"
+            )
     }
 
     @Test
@@ -97,11 +91,11 @@ class FetchStaticGtfsDataTest {
         messageHandler.accept(message)
 
         assertThat(logHandler.storedLogRecords[0])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Could not find static/latest.txt file, will download current GTFS zip file."
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Could not find static/latest.txt file, will download current GTFS zip file."
+            )
     }
 
     @Test
@@ -109,29 +103,31 @@ class FetchStaticGtfsDataTest {
         messageHandler.accept(message)
 
         assertThat(logHandler.storedLogRecords[1])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Currently available static GTFS zip file has ETag $sampleETag2"
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Currently available static GTFS zip file has ETag $sampleETag2"
+            )
     }
 
     @Test
     fun shouldLogWhenEtagHeaderNotPresent() {
-        every {
-            mockHttpClient.send(match { request ->
-                request.method() == "HEAD" && request.uri().toString() == FetchStaticGtfsData.GTFS_URL
-            }, any<BodyHandler<String>>()).headers()
-        } returns HttpHeaders.of(mapOf()) { _, _ -> true }
+        mockHttpEngine.config.requestHandlers[0] = { request ->
+            if (request.method == HttpMethod.Head && request.url.toString() == FetchStaticGtfsData.GTFS_URL) {
+                respondOk()
+            } else {
+                respondBadRequest()
+            }
+        }
 
         messageHandler.accept(message)
 
         assertThat(logHandler.storedLogRecords[1])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Currently available static GTFS zip file has ETag <No ETag Provided>"
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Currently available static GTFS zip file has ETag <No ETag Provided>"
+            )
     }
 
     @Test
@@ -143,22 +139,22 @@ class FetchStaticGtfsDataTest {
         messageHandler.accept(message)
 
         assertThat(logHandler.storedLogRecords[2])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_0.zip"
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_0.zip"
+            )
 
         val expectedBlob = BlobInfo.newBuilder(Constants.BUCKET_ID, "static/2022/07/28/gtfs_0.zip").build()
         verify {
-            mockStorage.createFrom(expectedBlob, testBody)
+            mockStorage.createFrom(expectedBlob, match<InputStream> { it.readAllBytes().toString(Charsets.UTF_8) == testBody })
         }
         assertThat(logHandler.storedLogRecords[3])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Successfully saved file, updating ETag"
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Successfully saved file, updating ETag"
+            )
     }
 
     @Test
@@ -176,23 +172,23 @@ class FetchStaticGtfsDataTest {
         messageHandler.accept(message)
 
         assertThat(logHandler.storedLogRecords[2])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_2.zip"
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_2.zip"
+            )
 
 
         val expectedBlob = BlobInfo.newBuilder(Constants.BUCKET_ID, "static/2022/07/28/gtfs_2.zip").build()
         verify {
-            mockStorage.createFrom(expectedBlob, testBody)
+            mockStorage.createFrom(expectedBlob, match<InputStream> { it.readAllBytes().toString(Charsets.UTF_8) == testBody })
         }
         assertThat(logHandler.storedLogRecords[3])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Successfully saved file, updating ETag"
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Successfully saved file, updating ETag"
+            )
     }
 
     @Test
@@ -213,23 +209,23 @@ class FetchStaticGtfsDataTest {
         messageHandler.accept(message)
 
         assertThat(logHandler.storedLogRecords[2])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_3.zip"
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_3.zip"
+            )
 
 
         val expectedBlob = BlobInfo.newBuilder(Constants.BUCKET_ID, "static/2022/07/28/gtfs_3.zip").build()
         verify {
-            mockStorage.createFrom(expectedBlob, testBody)
+            mockStorage.createFrom(expectedBlob, match<InputStream> { it.readAllBytes().toString(Charsets.UTF_8) == testBody })
         }
         assertThat(logHandler.storedLogRecords[3])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Successfully saved file, updating ETag"
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Successfully saved file, updating ETag"
+            )
     }
 
     @Test
@@ -241,34 +237,39 @@ class FetchStaticGtfsDataTest {
             mockStorage.get(Constants.BUCKET_ID, "static/latest.txt").getContent()
         } returns sampleETag1.toByteArray(Charsets.UTF_8)
 
-        every {
-            mockHttpClient.send(match { request ->
-                request.method() == "HEAD" && request.uri().toString() == FetchStaticGtfsData.GTFS_URL
-            }, any<BodyHandler<String>>()).headers()
-        } returns HttpHeaders.of(
-                mapOf(
-                        ETAG_HEADER to listOf(sampleETag2)
+        mockHttpEngine.config.requestHandlers[0] = { request ->
+            if (request.method == HttpMethod.Head && request.url.toString() == FetchStaticGtfsData.GTFS_URL) {
+                respond(
+                    content = ByteReadChannel.Empty,
+                    status = HttpStatusCode.OK,
+                    headers = headersOf(
+                        ETAG_HEADER to listOf(sampleETag2),
+                    )
                 )
-        ) { _, _ -> true }
-
-        every {
-            mockHttpClient.send(match { request ->
-                request.method() == "GET" && request.uri().toString() == FetchStaticGtfsData.GTFS_URL
-            }, any<BodyHandler<InputStream>>()).body()
-        } returns testBody
-
+            } else if (request.method == HttpMethod.Get && request.url.toString() == FetchStaticGtfsData.GTFS_URL) {
+                respond(
+                    content = ByteReadChannel(testBody),
+                    status = HttpStatusCode.OK,
+                    headers = headersOf(
+                        ETAG_HEADER to listOf(sampleETag2),
+                    )
+                )
+            } else {
+                respondBadRequest()
+            }
+        }
         messageHandler.accept(message)
 
         assertThat(logHandler.storedLogRecords[2])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/04/04/gtfs_0.zip"
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/04/04/gtfs_0.zip"
+            )
 
         val expectedBlob = BlobInfo.newBuilder(Constants.BUCKET_ID, "static/2022/04/04/gtfs_0.zip").build()
         verify {
-            mockStorage.createFrom(expectedBlob, testBody)
+            mockStorage.createFrom(expectedBlob, match<InputStream> { it.readAllBytes().toString(Charsets.UTF_8) == testBody })
         }
     }
 
@@ -278,35 +279,41 @@ class FetchStaticGtfsDataTest {
             mockStorage.get(Constants.BUCKET_ID, "static/latest.txt")
         } returns null
 
-        every {
-            mockHttpClient.send(match { request ->
-                request.method() == "HEAD" && request.uri().toString() == FetchStaticGtfsData.GTFS_URL
-            }, any<BodyHandler<String>>()).headers()
-        } returns HttpHeaders.of(
-                mapOf(
+        mockHttpEngine.config.requestHandlers[0] = { request ->
+            if (request.method == HttpMethod.Head && request.url.toString() == FetchStaticGtfsData.GTFS_URL) {
+                respond(
+                    content = ByteReadChannel.Empty,
+                    status = HttpStatusCode.OK,
+                    headers = headersOf(
                         ETAG_HEADER to listOf(sampleETag2),
                         "Last-Modified" to listOf("Thu, 28 Jul 2022 23:42:33 GMT")
+                    )
                 )
-        ) { _, _ -> true }
-
-        every {
-            mockHttpClient.send(match { request ->
-                request.method() == "GET" && request.uri().toString() == FetchStaticGtfsData.GTFS_URL
-            }, any<BodyHandler<InputStream>>()).body()
-        } returns testBody
-
+            } else if (request.method == HttpMethod.Get && request.url.toString() == FetchStaticGtfsData.GTFS_URL) {
+                respond(
+                    content = ByteReadChannel(testBody),
+                    status = HttpStatusCode.OK,
+                    headers = headersOf(
+                        ETAG_HEADER to listOf(sampleETag2),
+                        "Last-Modified" to listOf("Thu, 28 Jul 2022 23:42:33 GMT")
+                    )
+                )
+            } else {
+                respondBadRequest()
+            }
+        }
         messageHandler.accept(message)
 
         assertThat(logHandler.storedLogRecords[2])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_0.zip"
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_0.zip"
+            )
 
         val expectedBlob = BlobInfo.newBuilder(Constants.BUCKET_ID, "static/2022/07/28/gtfs_0.zip").build()
         verify {
-            mockStorage.createFrom(expectedBlob, testBody)
+            mockStorage.createFrom(expectedBlob, match<InputStream> { it.readAllBytes().toString(Charsets.UTF_8) == testBody })
         }
     }
 
@@ -321,16 +328,16 @@ class FetchStaticGtfsDataTest {
         val latestFileBlob = BlobInfo.newBuilder(Constants.BUCKET_ID, "static/latest.txt").build()
         verify {
             mockStorage.create(
-                    latestFileBlob, sampleETag2.toByteArray(Charsets.UTF_8)
+                latestFileBlob, sampleETag2.toByteArray(Charsets.UTF_8)
             )
         }
 
         assertThat(logHandler.storedLogRecords[4])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Successfully updated ETag"
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Successfully updated ETag"
+            )
     }
 
     @Test
@@ -344,7 +351,7 @@ class FetchStaticGtfsDataTest {
         val latestFileBlob = BlobInfo.newBuilder(Constants.BUCKET_ID, "static/latest.txt").build()
         verify {
             mockStorage.create(
-                    latestFileBlob, sampleETag2.toByteArray(Charsets.UTF_8)
+                latestFileBlob, sampleETag2.toByteArray(Charsets.UTF_8)
             )
         }
     }
@@ -358,17 +365,15 @@ class FetchStaticGtfsDataTest {
         messageHandler.accept(message)
 
         assertThat(logHandler.storedLogRecords[2])
-                .hasFieldOrPropertyWithValue("level", Level.INFO)
-                .hasFieldOrPropertyWithValue(
-                        "message",
-                        "Latest ETag matches current ETag, skipping download."
-                )
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Latest ETag matches current ETag, skipping download."
+            )
 
-        verify(exactly = 0) {
-            mockHttpClient.send(match { request ->
-                request.method() == "GET" && request.uri().toString() == FetchStaticGtfsData.GTFS_URL
-            }, any<BodyHandler<ByteArray>>())
-        }
+        assertThat(mockHttpEngine.requestHistory).hasSize(1)
+        assertThat(mockHttpEngine.requestHistory[0].method).isEqualTo(HttpMethod.Head)
+        assertThat(mockHttpEngine.requestHistory[0].url.toString()).isEqualTo(FetchStaticGtfsData.GTFS_URL)
 
         verify(exactly = 0) {
             mockStorage.create(any(), any<ByteArray>())
@@ -384,7 +389,7 @@ class FetchStaticGtfsDataTest {
 
         private const val sampleETag1 = "807a42b5dba2d81:0"
         private const val sampleETag2 = "807a42b5dba2d82:0"
-        private val testBody = "Test Body".byteInputStream(Charsets.UTF_8)
+        private const val testBody = "Test Body"
         private val logHandler = TestLogHandler()
         private val logger = Logger.getLogger(FetchStaticGtfsData::class.qualifiedName)
 

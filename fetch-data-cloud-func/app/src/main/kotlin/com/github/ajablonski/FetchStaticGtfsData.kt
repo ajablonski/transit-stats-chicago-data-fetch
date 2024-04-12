@@ -6,24 +6,29 @@ import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
 import io.cloudevents.CloudEvent
+import io.ktor.client.*
+import io.ktor.client.engine.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.utils.io.jvm.javaio.*
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.annotations.TestOnly
-import java.io.InputStream
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.logging.Logger
-import kotlin.jvm.optionals.getOrDefault
 
 class FetchStaticGtfsData : CloudEventsFunction {
-    var httpClient: HttpClient = HttpClient.newHttpClient()
-        @TestOnly set
     var storage: Storage = StorageOptions.getDefaultInstance().service
         @TestOnly set
+    var httpClientEngine: HttpClientEngine = CIO.create()
+        @TestOnly set
+    private val httpClient: HttpClient by lazy {
+        HttpClient(httpClientEngine)
+    }
 
     override fun accept(payload: CloudEvent?) {
         val lastDownloadedETag = fetchLastRetrievedGtfsEtag()
@@ -34,36 +39,39 @@ class FetchStaticGtfsData : CloudEventsFunction {
                     logger.info("Most recently fetched static GTFS zip file had ETag $it")
                 }
             }
+        runBlocking {
 
-        val currentETag = fetchCurrentGtfsEtag()
-            .also { logger.info("Currently available static GTFS zip file has ETag $it") }
+            val currentETag = fetchCurrentGtfsEtag()
+                .also { logger.info("Currently available static GTFS zip file has ETag $it") }
 
-        if (currentETag == lastDownloadedETag) {
-            logger.info("Latest ETag matches current ETag, skipping download.")
-            return
+            if (currentETag == lastDownloadedETag) {
+                logger.info("Latest ETag matches current ETag, skipping download.")
+                return@runBlocking
+            }
+
+            httpClient.prepareGet(
+                Url(GTFS_URL)
+            ).execute { gtfsStaticDataResponse ->
+                val filePath = generateFilePath(gtfsStaticDataResponse)
+
+                logger.info("Downloading newer version and storing at gs://${Constants.BUCKET_ID}/$filePath")
+                storage.createFrom(
+                    BlobInfo.newBuilder(Constants.BUCKET_ID, filePath).build(),
+                    gtfsStaticDataResponse.bodyAsChannel().toInputStream()
+                )
+                logger.info("Successfully saved file, updating ETag")
+
+                storage.create(lastDownloadedETagBlobInfo, currentETag.toByteArray(Charsets.UTF_8))
+                logger.info("Successfully updated ETag")
+            }
         }
-
-        val gtfsStaticDataResponse = httpClient.send(
-            HttpRequest.newBuilder(URI.create(GTFS_URL)).GET().build(),
-            HttpResponse.BodyHandlers.ofInputStream()
-        )
-
-        val filePath = generateFilePath(gtfsStaticDataResponse)
-
-        logger.info("Downloading newer version and storing at gs://${Constants.BUCKET_ID}/$filePath")
-        storage.createFrom(BlobInfo.newBuilder(Constants.BUCKET_ID, filePath).build(), gtfsStaticDataResponse.body())
-        logger.info("Successfully saved file, updating ETag")
-
-        storage.create(lastDownloadedETagBlobInfo, currentETag.toByteArray(Charsets.UTF_8))
-        logger.info("Successfully updated ETag")
     }
 
-    private fun generateFilePath(gtfsStaticDataResponse: HttpResponse<InputStream>): String {
+    private fun generateFilePath(gtfsStaticDataResponse: io.ktor.client.statement.HttpResponse): String {
         val lastModifiedDateTime = gtfsStaticDataResponse
-            .headers()
-            .firstValue("Last-Modified")
-            .map { LocalDateTime.parse(it, DateTimeFormatter.ofPattern("EE, dd MMM yyyy HH:mm:ss zzz")) }
-            .getOrDefault(LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT")))
+            .headers["Last-Modified"]
+            ?.let { LocalDateTime.parse(it, DateTimeFormatter.ofPattern("EE, dd MMM yyyy HH:mm:ss zzz")) }
+            ?: LocalDateTime.ofInstant(Instant.now(), ZoneId.of("GMT"))
 
         val subPath = lastModifiedDateTime.format(DateTimeFormatter.ofPattern("'static'/yyyy/MM/dd"))
         val prefix = "$subPath/gtfs_"
@@ -81,13 +89,12 @@ class FetchStaticGtfsData : CloudEventsFunction {
         return "$subPath/gtfs_${largestIndex + 1}.zip"
     }
 
-    private fun fetchCurrentGtfsEtag(): String {
-        val headRequestHeaders = httpClient.send(
-            HttpRequest.newBuilder(URI.create(GTFS_URL)).method("HEAD", HttpRequest.BodyPublishers.noBody()).build(),
-            HttpResponse.BodyHandlers.ofString()
-        ).headers()
+    private suspend fun fetchCurrentGtfsEtag(): String {
+        val headRequestHeaders = httpClient.head(
+            Url(GTFS_URL)
+        ).headers
 
-        return headRequestHeaders.firstValue(ETAG_HEADER).getOrDefault("<No ETag Provided>")
+        return headRequestHeaders[ETAG_HEADER] ?: "<No ETag Provided>"
     }
 
     private fun fetchLastRetrievedGtfsEtag(): String? {
@@ -99,7 +106,8 @@ class FetchStaticGtfsData : CloudEventsFunction {
     companion object {
         const val GTFS_URL = "https://www.transitchicago.com/downloads/sch_data/google_transit.zip"
         private const val LAST_DOWNLOADED_ETAG_FILENAME = "static/latest.txt"
-        private val lastDownloadedETagBlobInfo = BlobInfo.newBuilder(Constants.BUCKET_ID, LAST_DOWNLOADED_ETAG_FILENAME).build()
+        private val lastDownloadedETagBlobInfo =
+            BlobInfo.newBuilder(Constants.BUCKET_ID, LAST_DOWNLOADED_ETAG_FILENAME).build()
         private val logger = Logger.getLogger(FetchStaticGtfsData::class.java.name)
     }
 }
