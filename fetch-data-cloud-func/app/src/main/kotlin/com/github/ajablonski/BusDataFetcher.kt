@@ -6,6 +6,7 @@ import com.google.common.io.Resources
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import java.net.URI
@@ -20,7 +21,11 @@ class BusDataFetcher(
     private val storage: Storage,
     private val apiKey: String,
     routeFile: URL = Resources.getResource(BusDataFetcher::class.java, "/bus_routes.txt"),
-    private val httpClient: HttpClient = HttpClient(httpClientEngine) {}
+    private val httpClient: HttpClient = HttpClient(httpClientEngine) {
+        install(HttpRequestRetry) {
+            retryOnExceptionOrServerErrors(maxRetries = 3)
+        }
+    }
 ) {
     private val routeBatches =
         Resources.readLines(routeFile, Charsets.UTF_8)

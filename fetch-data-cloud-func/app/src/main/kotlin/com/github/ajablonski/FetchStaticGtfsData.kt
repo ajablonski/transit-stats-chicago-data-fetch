@@ -9,6 +9,7 @@ import io.cloudevents.CloudEvent
 import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -24,10 +25,16 @@ import java.util.logging.Logger
 class FetchStaticGtfsData : CloudEventsFunction {
     var storage: Storage = StorageOptions.getDefaultInstance().service
         @TestOnly set
-    var httpClientEngine: HttpClientEngine = CIO.create()
+    var httpClientEngine: HttpClientEngine = CIO.create {
+        requestTimeout = 0
+    }
         @TestOnly set
     private val httpClient: HttpClient by lazy {
-        HttpClient(httpClientEngine)
+        HttpClient(httpClientEngine) {
+            install(HttpRequestRetry) {
+                retryOnException(maxRetries = 3)
+            }
+        }
     }
 
     override fun accept(payload: CloudEvent?) {

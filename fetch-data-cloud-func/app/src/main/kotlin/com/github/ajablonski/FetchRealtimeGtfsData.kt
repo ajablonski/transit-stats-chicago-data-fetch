@@ -17,8 +17,9 @@ import kotlin.io.path.readText
 class FetchRealtimeGtfsData(secretPath: Path = defaultSecretPath) : CloudEventsFunction {
     var storage: Storage = StorageOptions.getDefaultInstance().service
         @TestOnly set
-    private var ktorHttpClientEngine: HttpClientEngine = CIO.create()
-        @TestOnly set
+    private val ktorHttpClientEngine: HttpClientEngine = CIO.create {
+        requestTimeout = 120_000
+    }
 
     private val apiKeys = json.decodeFromString<Secrets>(secretPath.readText())
 

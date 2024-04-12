@@ -6,6 +6,7 @@ import com.google.cloud.storage.Storage
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.serialization.json.Json
@@ -19,7 +20,11 @@ class RailDataFetcher(
     private val httpClientEngine: HttpClientEngine,
     private val storage: Storage,
     private val apiKey: String,
-    private val httpClient: HttpClient = HttpClient(httpClientEngine)
+    private val httpClient: HttpClient = HttpClient(httpClientEngine) {
+        install(HttpRequestRetry) {
+            retryOnExceptionOrServerErrors(maxRetries = 3)
+        }
+    }
 ) {
     suspend fun fetch() {
         val responseBody = httpClient.get(generateUri()).body<String>()

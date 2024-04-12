@@ -26,6 +26,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.logging.Level
 import java.util.logging.Logger
+import javax.net.ssl.SSLHandshakeException
 
 class FetchStaticGtfsDataTest {
     private lateinit var messageHandler: FetchStaticGtfsData
@@ -148,6 +149,86 @@ class FetchStaticGtfsDataTest {
         val expectedBlob = BlobInfo.newBuilder(Constants.BUCKET_ID, "static/2022/07/28/gtfs_0.zip").build()
         verify {
             mockStorage.createFrom(expectedBlob, match<InputStream> { it.readAllBytes().toString(Charsets.UTF_8) == testBody })
+        }
+        assertThat(logHandler.storedLogRecords[3])
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Successfully saved file, updating ETag"
+            )
+    }
+
+
+    @Test
+    fun shouldRetryOnFailureUpToThreeTimesOnException() {
+        every {
+            mockStorage.get(Constants.BUCKET_ID, "static/latest.txt").getContent()
+        } returns sampleETag1.toByteArray(Charsets.UTF_8)
+
+        val originalHandler = mockHttpEngine.config.requestHandlers[0]
+        mockHttpEngine.config.requestHandlers[0] = { request ->
+            throw SSLHandshakeException("Error")
+        }
+        val errorHandler = mockHttpEngine.config.requestHandlers[0]
+        mockHttpEngine.config.addHandler(errorHandler)
+        mockHttpEngine.config.addHandler(errorHandler)
+        mockHttpEngine.config.addHandler(originalHandler)
+        mockHttpEngine.config.addHandler(originalHandler)
+        mockHttpEngine.config.reuseHandlers = false
+        messageHandler.accept(message)
+
+        assertThat(logHandler.storedLogRecords[2])
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_0.zip"
+            )
+
+        val expectedBlob = BlobInfo.newBuilder(Constants.BUCKET_ID, "static/2022/07/28/gtfs_0.zip").build()
+        verify {
+            mockStorage.createFrom(
+                expectedBlob,
+                match<InputStream> { it.readAllBytes().toString(Charsets.UTF_8) == testBody })
+        }
+        assertThat(logHandler.storedLogRecords[3])
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Successfully saved file, updating ETag"
+            )
+    }
+
+
+    @Test
+    fun shouldRetryOnFailureUpToThreeTimesOnServerError() {
+        every {
+            mockStorage.get(Constants.BUCKET_ID, "static/latest.txt").getContent()
+        } returns sampleETag1.toByteArray(Charsets.UTF_8)
+
+        val originalHandler = mockHttpEngine.config.requestHandlers[0]
+        mockHttpEngine.config.requestHandlers[0] = {
+            respondError(HttpStatusCode.GatewayTimeout)
+        }
+        val errorHandler = mockHttpEngine.config.requestHandlers[0]
+        mockHttpEngine.config.addHandler(errorHandler)
+        mockHttpEngine.config.addHandler(errorHandler)
+        mockHttpEngine.config.addHandler(originalHandler)
+        mockHttpEngine.config.addHandler(originalHandler)
+        mockHttpEngine.config.reuseHandlers = false
+        messageHandler.accept(message)
+
+        assertThat(logHandler.storedLogRecords[2])
+            .hasFieldOrPropertyWithValue("level", Level.INFO)
+            .hasFieldOrPropertyWithValue(
+                "message",
+                "Downloading newer version and storing at gs://tsc-gtfs-data/static/2022/07/28/gtfs_0.zip"
+            )
+
+        val expectedBlob = BlobInfo.newBuilder(Constants.BUCKET_ID, "static/2022/07/28/gtfs_0.zip").build()
+        verify {
+            mockStorage.createFrom(
+                expectedBlob,
+                match<InputStream> { it.readAllBytes().toString(Charsets.UTF_8) == testBody })
         }
         assertThat(logHandler.storedLogRecords[3])
             .hasFieldOrPropertyWithValue("level", Level.INFO)
