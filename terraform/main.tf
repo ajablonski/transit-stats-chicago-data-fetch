@@ -1,5 +1,5 @@
 terraform {
-  required_version = "1.5.4"
+  required_version = "~> 1.5"
   required_providers {
     google = {
       source  = "hashicorp/google"
@@ -25,6 +25,12 @@ provider "google-beta" {
 resource "google_storage_bucket" "gtfs_data" {
   location      = "US-CENTRAL1"
   name          = "tsc-gtfs-data"
+  storage_class = "STANDARD"
+}
+
+resource "google_storage_bucket" "gtfs_data_test" {
+  location      = "US-CENTRAL1"
+  name          = "tsc-gtfs-data-test"
   storage_class = "STANDARD"
 }
 
