@@ -23,7 +23,8 @@ class BusDataFetcher(
     routeFile: URL = Resources.getResource(BusDataFetcher::class.java, "/bus_routes.txt"),
     private val httpClient: HttpClient = HttpClient(httpClientEngine) {
         install(HttpRequestRetry) {
-            retryOnExceptionOrServerErrors(maxRetries = 3)
+            retryOnServerErrors(maxRetries = 3)
+            retryOnException(maxRetries = 3, retryOnTimeout = true)
         }
     }
 ) {

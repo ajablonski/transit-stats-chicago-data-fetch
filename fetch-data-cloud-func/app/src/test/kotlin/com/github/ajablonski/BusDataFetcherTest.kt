@@ -3,6 +3,7 @@ package com.github.ajablonski
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import io.ktor.client.engine.mock.*
+import io.ktor.client.plugins.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
 import io.mockk.mockk
@@ -12,6 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.util.concurrent.TimeoutException
 import javax.net.ssl.SSLHandshakeException
 
 internal class BusDataFetcherTest {
@@ -79,6 +81,45 @@ internal class BusDataFetcherTest {
             if (errorCount > 0) {
                 errorCount--
                 throw SSLHandshakeException("Error")
+            }
+
+            if (
+                request.url.host == "www.ctabustracker.com"
+                && request.url.encodedPath == "/bustime/api/v2/getvehicles"
+                && request.url.parameters["key"] == fakeApiKey
+                && request.url.parameters["tmres"] == "s"
+                && request.url.parameters["format"] == "json"
+                && request.url.parameters.contains("rt")
+            ) {
+                respond(
+                    content = ByteReadChannel(sampleResponse),
+                    status = HttpStatusCode.OK
+                )
+            } else {
+                respondBadRequest()
+            }
+        }
+
+        runBlocking {
+            busDataFetcher.fetch(ZonedDateTime.of(2022, 8, 22, 1, 2, 3, 0, ZoneOffset.UTC))
+        }
+
+        verify {
+            storage.create(
+                BlobInfo.newBuilder(Constants.BUCKET_ID, "realtime/raw/bus/2022/08/21/2022-08-21T20:02:03.json")
+                    .build(),
+                match<ByteArray> { it.size == sampleResponse.length * 13 + 12 * 2 + 2 }
+            )
+        }
+    }
+
+    @Test
+    fun shouldRetryOnConnectTimeoutException() {
+        var errorCount = 1
+        mockEngine.config.requestHandlers[0] = { request ->
+            if (errorCount > 0) {
+                errorCount--
+                throw ConnectTimeoutException("fakeUrl", 0)
             }
 
             if (

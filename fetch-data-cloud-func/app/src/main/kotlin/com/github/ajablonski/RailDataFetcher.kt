@@ -22,8 +22,8 @@ class RailDataFetcher(
     private val apiKey: String,
     private val httpClient: HttpClient = HttpClient(httpClientEngine) {
         install(HttpRequestRetry) {
-            retryOnExceptionOrServerErrors(maxRetries = 3)
-        }
+            retryOnServerErrors(maxRetries = 3)
+            retryOnException(maxRetries = 3, retryOnTimeout = true)        }
     }
 ) {
     suspend fun fetch() {

@@ -4,6 +4,7 @@ import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.google.common.testing.TestLogHandler
 import io.ktor.client.engine.mock.*
+import io.ktor.client.plugins.*
 import io.ktor.http.*
 import io.ktor.utils.io.*
 import io.mockk.mockk
@@ -87,6 +88,49 @@ internal class RailDataFetcherTest {
             if (errorCount > 0) {
                 errorCount--
                 throw SSLHandshakeException("Error")
+            }
+
+            if (request.method == HttpMethod.Get
+                && request.url.parameters["key"] == trainTrackerApiKey
+                && request.url.parameters["outputType"] == "JSON"
+                && request.url.parameters["rt"]!!.split(",")
+                    .containsAll(setOf("Red", "Blue", "Brn", "G", "Org", "P", "Pink"))
+            ) {
+                respond(
+                    content = ByteReadChannel(testData),
+                    status = HttpStatusCode.OK
+                )
+            } else {
+                respondBadRequest()
+            }
+        }
+        runBlocking { railDataFetcher.fetch() }
+
+        verify {
+            storage.create(
+                BlobInfo
+                    .newBuilder(
+                        Constants.BUCKET_ID,
+                        "realtime/raw/rail/2022/08/06/2022-08-06T18:54:12.json"
+                    )
+                    .setContentType("application/json")
+                    .setCustomTimeOffsetDateTime(
+                        ZonedDateTime.of(2022, 8, 6, 18, 54, 12, 0, ZoneId.of("America/Chicago")).toOffsetDateTime()
+                    )
+                    .build(),
+                testData.toByteArray(),
+            )
+        }
+    }
+
+
+    @Test
+    fun shouldRetryOnTimeoutException() {
+        var errorCount = 1
+        httpClientEngine.config.requestHandlers[0] = { request ->
+            if (errorCount > 0) {
+                errorCount--
+                throw ConnectTimeoutException("Error", 0)
             }
 
             if (request.method == HttpMethod.Get
