@@ -33,12 +33,13 @@ class RailDataFetcher(
 
         val timestampLocalDateTime = LocalDateTime.parse(timestamp)
         val prefix = timestampLocalDateTime.format(DateTimeFormatter.ofPattern("'realtime/raw/rail'/YYYY/MM/dd"))
-        logger.info("Storing rail data at gs://${Constants.BUCKET_ID}/$prefix/$timestamp.json")
+        val timestampNoColons = timestamp.replace(":", "_")
+        logger.info("Storing rail data at gs://${Constants.BUCKET_ID}/$prefix/$timestampNoColons.json")
         storage.create(
             BlobInfo
                 .newBuilder(
                     Constants.BUCKET_ID,
-                    "$prefix/$timestamp.json"
+                    "$prefix/$timestampNoColons.json"
                 )
                 .setContentType("application/json")
                 .setCustomTimeOffsetDateTime(

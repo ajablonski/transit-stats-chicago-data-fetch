@@ -68,7 +68,7 @@ internal class RailDataFetcherTest {
                 BlobInfo
                     .newBuilder(
                         Constants.BUCKET_ID,
-                        "realtime/raw/rail/2022/08/06/2022-08-06T18:54:12.json"
+                        "realtime/raw/rail/2022/08/06/2022-08-06T18_54_12.json"
                     )
                     .setContentType("application/json")
                     .setCustomTimeOffsetDateTime(
@@ -111,7 +111,7 @@ internal class RailDataFetcherTest {
                 BlobInfo
                     .newBuilder(
                         Constants.BUCKET_ID,
-                        "realtime/raw/rail/2022/08/06/2022-08-06T18:54:12.json"
+                        "realtime/raw/rail/2022/08/06/2022-08-06T18_54_12.json"
                     )
                     .setContentType("application/json")
                     .setCustomTimeOffsetDateTime(
@@ -154,7 +154,7 @@ internal class RailDataFetcherTest {
                 BlobInfo
                     .newBuilder(
                         Constants.BUCKET_ID,
-                        "realtime/raw/rail/2022/08/06/2022-08-06T18:54:12.json"
+                        "realtime/raw/rail/2022/08/06/2022-08-06T18_54_12.json"
                     )
                     .setContentType("application/json")
                     .setCustomTimeOffsetDateTime(
@@ -196,7 +196,7 @@ internal class RailDataFetcherTest {
                 BlobInfo
                     .newBuilder(
                         Constants.BUCKET_ID,
-                        "realtime/raw/rail/2022/08/06/2022-08-06T18:54:12.json"
+                        "realtime/raw/rail/2022/08/06/2022-08-06T18_54_12.json"
                     )
                     .setContentType("application/json")
                     .setCustomTimeOffsetDateTime(
@@ -211,7 +211,7 @@ internal class RailDataFetcherTest {
     @Test
     fun shouldLogAppropriateMessages() {
         logHandler.storedLogRecords[0].apply {
-            assertThat(message).isEqualTo("Storing rail data at gs://tsc-gtfs-data/realtime/raw/rail/2022/08/06/2022-08-06T18:54:12.json")
+            assertThat(message).isEqualTo("Storing rail data at gs://tsc-gtfs-data/realtime/raw/rail/2022/08/06/2022-08-06T18_54_12.json")
             assertThat(level).isEqualTo(Level.INFO)
         }
         logHandler.storedLogRecords[1].apply {

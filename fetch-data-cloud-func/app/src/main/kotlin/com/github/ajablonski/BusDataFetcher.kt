@@ -43,7 +43,7 @@ class BusDataFetcher(
         }
 
         val filename = time.withZoneSameInstant(centralTime)
-            .format(DateTimeFormatter.ofPattern("'realtime/raw/bus'/YYYY/MM/dd/YYYY-MM-dd'T'HH:mm:ss'.json'"))
+            .format(DateTimeFormatter.ofPattern("'realtime/raw/bus'/YYYY/MM/dd/YYYY-MM-dd'T'HH_mm_ss'.json'"))
 
         logger.info("Storing bus data at gs://${Constants.BUCKET_ID}/$filename")
         storage.create(
