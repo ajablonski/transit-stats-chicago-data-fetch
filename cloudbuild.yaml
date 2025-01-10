@@ -6,7 +6,7 @@ steps:
   - name: gradle:8.12-jdk21-alpine
     id: build
     entrypoint: gradle
-    args: [ '-p', 'fetch-data-cloud-func', 'shadowJar' ]
+    args: [ '-p', 'fetch-data-cloud-func', 'clean', 'shadowJar' ]
     waitFor:
       - test
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk:426.0.0-alpine
