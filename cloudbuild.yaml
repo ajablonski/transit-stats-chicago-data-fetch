@@ -1,9 +1,9 @@
 steps:
-  - name: gradle:8.7-jdk21-alpine
+  - name: gradle:8.12-jdk21-alpine
     id: test
     entrypoint: gradle
     args: [ '-p', 'fetch-data-cloud-func', 'test' ]
-  - name: gradle:8.7-jdk21-alpine
+  - name: gradle:8.12-jdk21-alpine
     id: build
     entrypoint: gradle
     args: [ '-p', 'fetch-data-cloud-func', 'shadowJar' ]

@@ -5,6 +5,12 @@
       <GradleProjectSettings>
         <option name="externalProjectPath" value="$PROJECT_DIR$/fetch-data-cloud-func" />
         <option name="gradleJvm" value="21" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/fetch-data-cloud-func" />
+            <option value="$PROJECT_DIR$/fetch-data-cloud-func/app" />
+          </set>
+        </option>
       </GradleProjectSettings>
     </option>
   </component>

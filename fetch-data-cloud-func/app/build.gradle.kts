@@ -1,8 +1,8 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 plugins {
-    kotlin("jvm") version "1.9.23"
-    kotlin("plugin.serialization") version "1.9.23"
+    kotlin("jvm") version "2.1.0"
+    kotlin("plugin.serialization") version "2.1.0"
     id("com.github.ben-manes.versions") version "0.51.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
@@ -15,24 +15,24 @@ val ktorVersion: String by project
 val invoker: Configuration by configurations.creating
 
 dependencies {
-    compileOnly("com.google.cloud.functions:functions-framework-api:1.1.0")
-    invoker("com.google.cloud.functions.invoker:java-function-invoker:1.3.1")
+    compileOnly("com.google.cloud.functions:functions-framework-api:1.1.4")
+    invoker("com.google.cloud.functions.invoker:java-function-invoker:1.3.3")
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    implementation(platform("com.google.cloud:libraries-bom:26.35.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.52.0"))
 
-    implementation("com.google.cloud:google-cloud-storage:2.36.1")
+    implementation("com.google.cloud:google-cloud-storage:2.47.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
 
-    testImplementation("com.google.cloud.functions:functions-framework-api:1.1.0")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
-    testImplementation("com.google.guava:guava-testlib:33.1.0-jre")
-    testImplementation("org.assertj:assertj-core:3.25.3")
-    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation("com.google.cloud.functions:functions-framework-api:1.1.4")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testImplementation("com.google.guava:guava-testlib:33.4.0-jre")
+    testImplementation("org.assertj:assertj-core:3.27.2")
+    testImplementation("io.mockk:mockk:1.13.16")
 
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
 
