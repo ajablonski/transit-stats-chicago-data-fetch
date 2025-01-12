@@ -23,20 +23,23 @@ provider "google-beta" {
 }
 
 resource "google_storage_bucket" "gtfs_data" {
-  location      = "US-CENTRAL1"
-  name          = "tsc-gtfs-data"
-  storage_class = "STANDARD"
+  location                    = "US-CENTRAL1"
+  name                        = "tsc-gtfs-data"
+  storage_class               = "STANDARD"
+  uniform_bucket_level_access = true
 }
 
 resource "google_storage_bucket" "gtfs_data_test" {
-  location      = "US-CENTRAL1"
-  name          = "tsc-gtfs-data-test"
-  storage_class = "STANDARD"
+  location                    = "US-CENTRAL1"
+  name                        = "tsc-gtfs-data-test"
+  storage_class               = "STANDARD"
+  uniform_bucket_level_access = true
 }
 
 resource "google_storage_bucket" "terraform_state" {
-  location = "US-CENTRAL1"
-  name     = "tsc-terraform-state"
+  location                    = "US-CENTRAL1"
+  name                        = "tsc-terraform-state"
+  uniform_bucket_level_access = true
 
   lifecycle_rule {
     action {
@@ -47,7 +50,7 @@ resource "google_storage_bucket" "terraform_state" {
       age                        = 0
       days_since_custom_time     = 0
       days_since_noncurrent_time = 0
-      matches_storage_class      = []
+      matches_storage_class = []
       num_newer_versions         = 2
       with_state                 = "ARCHIVED"
     }
@@ -62,7 +65,7 @@ resource "google_storage_bucket" "terraform_state" {
       age                        = 0
       days_since_custom_time     = 0
       days_since_noncurrent_time = 7
-      matches_storage_class      = []
+      matches_storage_class = []
       num_newer_versions         = 0
       with_state                 = "ANY"
     }
@@ -90,7 +93,7 @@ resource "google_cloud_scheduler_job" "fetch_static_gtfs_data_trigger" {
 
   pubsub_target {
     topic_name = google_pubsub_topic.static_scheduling_topic.id
-    data       = base64encode(jsonencode({ "trigger" = "fetch-static-gtfs-data" }))
+    data = base64encode(jsonencode({ "trigger" = "fetch-static-gtfs-data" }))
   }
 }
 
@@ -101,7 +104,7 @@ resource "google_cloud_scheduler_job" "fetch_realtime_gtfs_data_trigger" {
 
   pubsub_target {
     topic_name = google_pubsub_topic.realtime_scheduling_topic.id
-    data       = base64encode(jsonencode({ "trigger" = "fetch-realtime-gtfs-data" }))
+    data = base64encode(jsonencode({ "trigger" = "fetch-realtime-gtfs-data" }))
   }
 }
 
@@ -122,7 +125,7 @@ data "google_iam_role" "run_invoker" {
   name = "roles/run.invoker"
 }
 
-data "google_iam_role" "storage_admin" {
+data "google_iam_role" "storage_object_admin" {
   name = "roles/storage.objectAdmin"
 }
 
@@ -132,21 +135,11 @@ resource "google_project_iam_member" "allow_compute_service_user_cloud_run_invok
   role    = data.google_iam_role.run_invoker.id
 }
 
-resource "google_project_iam_member" "allow_compute_service_user_bucket_access" {
-  member  = "serviceAccount:${data.google_service_account.gen2_compute_user.email}"
-  project = data.google_project.project.project_id
-  role    = data.google_iam_role.storage_admin.id
-  condition {
-    expression  = "resource.name.startsWith(\"projects/_/buckets/${google_storage_bucket.gtfs_data.name}/\")"
-    description = "Allow access to ${google_storage_bucket.gtfs_data.name} bucket"
-    title       = "${google_storage_bucket.gtfs_data.name}_bucket_access"
-  }
-}
-
 resource "google_storage_bucket_iam_binding" "allow_gtfs_function_user_bucket_access" {
-  role   = data.google_iam_role.storage_admin.id
+  role   = data.google_iam_role.storage_object_admin.id
   bucket = google_storage_bucket.gtfs_data.id
-  members = ["serviceAccount:${google_service_account.gtfs_fetch_user.email}",
+  members = [
+    "serviceAccount:${google_service_account.gtfs_fetch_user.email}",
     "serviceAccount:${data.google_service_account.gen2_compute_user.email}"
   ]
 }
