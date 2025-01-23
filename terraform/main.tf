@@ -27,6 +27,7 @@ resource "google_storage_bucket" "gtfs_data" {
   name                        = "tsc-gtfs-data"
   storage_class               = "STANDARD"
   uniform_bucket_level_access = true
+  requester_pays              = true
 }
 
 resource "google_storage_bucket" "gtfs_data_test" {
