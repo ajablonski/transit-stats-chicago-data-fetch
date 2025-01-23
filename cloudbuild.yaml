@@ -9,7 +9,7 @@ steps:
     args: [ '-p', 'fetch-data-cloud-func', 'clean', 'shadowJar' ]
     waitFor:
       - test
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:426.0.0-alpine
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:507.0.0-alpine
     args:
       - gcloud
       - functions
@@ -28,7 +28,7 @@ steps:
       - --memory=384MiB
     waitFor:
       - build
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:426.0.0-alpine
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:507.0.0-alpine
     args:
       - gcloud
       - functions
