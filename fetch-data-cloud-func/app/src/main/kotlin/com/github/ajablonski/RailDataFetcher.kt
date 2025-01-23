@@ -3,6 +3,7 @@ package com.github.ajablonski
 import com.github.ajablonski.serdes.PartialLocationResponse
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
+import com.google.cloud.storage.StorageOptions
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.*
@@ -47,7 +48,8 @@ class RailDataFetcher(
                         .toOffsetDateTime()
                 )
                 .build(),
-            responseBody.toByteArray()
+            responseBody.toByteArray(),
+            Storage.BlobTargetOption.userProject(StorageOptions.getDefaultProjectId())
         )
         logger.info("Rail data successfully stored")
     }

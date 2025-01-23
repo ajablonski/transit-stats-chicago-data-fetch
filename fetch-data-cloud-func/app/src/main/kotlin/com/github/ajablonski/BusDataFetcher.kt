@@ -2,6 +2,7 @@ package com.github.ajablonski
 
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
+import com.google.cloud.storage.StorageOptions
 import com.google.common.io.Resources
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -48,7 +49,8 @@ class BusDataFetcher(
         logger.info("Storing bus data at gs://${Constants.BUCKET_ID}/$filename")
         storage.create(
             BlobInfo.newBuilder(Constants.BUCKET_ID, filename).build(),
-            trackerResponseBodies.joinToString(",\n", prefix = "[", postfix = "]").toByteArray(Charsets.UTF_8)
+            trackerResponseBodies.joinToString(",\n", prefix = "[", postfix = "]").toByteArray(Charsets.UTF_8),
+            Storage.BlobTargetOption.userProject(StorageOptions.getDefaultProjectId())
         )
         logger.info("Bus data successfully stored")
     }

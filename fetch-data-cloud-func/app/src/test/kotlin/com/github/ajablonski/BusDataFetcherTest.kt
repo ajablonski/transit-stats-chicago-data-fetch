@@ -10,6 +10,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -39,7 +40,6 @@ internal class BusDataFetcherTest {
     }
     private val busDataFetcher = BusDataFetcher(mockEngine, storage, fakeApiKey)
 
-
     @Test
     fun shouldCallBusTrackerApiForAllKnownRoutesInBatches() {
         runBlocking { busDataFetcher.fetch(messageTime) }
@@ -68,7 +68,8 @@ internal class BusDataFetcherTest {
             storage.create(
                 BlobInfo.newBuilder(Constants.BUCKET_ID, "realtime/raw/bus/2022/08/21/2022-08-21T20_02_03.json")
                     .build(),
-                match<ByteArray> { it.size == sampleResponse.length * 13 + 12 * 2 + 2 }
+                match<ByteArray> { it.size == sampleResponse.length * 13 + 12 * 2 + 2 },
+                Storage.BlobTargetOption.userProject(fakeUserProject)
             )
         }
     }
@@ -108,7 +109,8 @@ internal class BusDataFetcherTest {
             storage.create(
                 BlobInfo.newBuilder(Constants.BUCKET_ID, "realtime/raw/bus/2022/08/21/2022-08-21T20_02_03.json")
                     .build(),
-                match<ByteArray> { it.size == sampleResponse.length * 13 + 12 * 2 + 2 }
+                match<ByteArray> { it.size == sampleResponse.length * 13 + 12 * 2 + 2 },
+                Storage.BlobTargetOption.userProject(fakeUserProject)
             )
         }
     }
@@ -147,7 +149,8 @@ internal class BusDataFetcherTest {
             storage.create(
                 BlobInfo.newBuilder(Constants.BUCKET_ID, "realtime/raw/bus/2022/08/21/2022-08-21T20_02_03.json")
                     .build(),
-                match<ByteArray> { it.size == sampleResponse.length * 13 + 12 * 2 + 2 }
+                match<ByteArray> { it.size == sampleResponse.length * 13 + 12 * 2 + 2 },
+                Storage.BlobTargetOption.userProject(fakeUserProject)
             )
         }
     }
@@ -185,14 +188,22 @@ internal class BusDataFetcherTest {
             storage.create(
                 BlobInfo.newBuilder(Constants.BUCKET_ID, "realtime/raw/bus/2022/08/21/2022-08-21T20_02_03.json")
                     .build(),
-                match<ByteArray> { it.size == sampleResponse.length * 13 + 12 * 2 + 2 }
+                match<ByteArray> { it.size == sampleResponse.length * 13 + 12 * 2 + 2 },
+                Storage.BlobTargetOption.userProject(fakeUserProject)
             )
         }
     }
 
     companion object {
+        @JvmStatic
+        @BeforeAll
+        fun beforeAll() {
+            System.setProperty("GOOGLE_CLOUD_PROJECT", fakeUserProject)
+        }
+
         private val messageTime = ZonedDateTime.of(2022, 8, 22, 1, 2, 3, 0, ZoneOffset.UTC)
         const val fakeApiKey = "fakeBusKey"
+        const val fakeUserProject = "fakeUserProject"
         const val sampleResponse = """{"bustime-response": {"vehicle": [
                 {
                     "des": "Michigan/Chicago", 
@@ -221,5 +232,7 @@ internal class BusDataFetcherTest {
                     "zone": "Bay 1" 
                 }
             ]}}"""
+
+
     }
 }

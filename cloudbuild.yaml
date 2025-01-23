@@ -15,14 +15,15 @@ steps:
       - functions
       - deploy
       - fetch-static-gtfs-data
-      - --ingress-settings=internal-only
       - --gen2
+      - --ingress-settings=internal-only
       - --entry-point=com.github.ajablonski.FetchStaticGtfsData
       - --region=us-central1
       - --source=fetch-data-cloud-func/app/build/libs
       - --trigger-topic=fetch-static-gtfs-data-triggers
-      - --run-service-account=gtfs-fetch@transit-stats-chicago.iam.gserviceaccount.com
       - --runtime=java21
+      - --run-service-account=gtfs-fetch@transit-stats-chicago.iam.gserviceaccount.com
+      - --set-env-vars=BUCKET_ID=tsc-gtfs-data
       - --max-instances=1
       - --memory=384MiB
     waitFor:
@@ -40,6 +41,8 @@ steps:
       - --source=fetch-data-cloud-func/app/build/libs
       - --trigger-topic=fetch-realtime-gtfs-data-triggers
       - --runtime=java21
+      - --run-service-account=gtfs-fetch@transit-stats-chicago.iam.gserviceaccount.com
+      - --set-env-vars=BUCKET_ID=tsc-gtfs-data
       - --max-instances=1
       - --memory=384MiB
       - --set-secrets=/etc/secrets/gtfs_secrets.json=gtfs-secrets-cta:1

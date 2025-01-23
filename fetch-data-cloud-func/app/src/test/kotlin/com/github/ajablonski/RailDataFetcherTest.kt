@@ -76,6 +76,7 @@ internal class RailDataFetcherTest {
                     )
                     .build(),
                 testData.toByteArray(),
+                Storage.BlobTargetOption.userProject(fakeUserProject)
             )
         }
     }
@@ -119,6 +120,7 @@ internal class RailDataFetcherTest {
                     )
                     .build(),
                 testData.toByteArray(),
+                Storage.BlobTargetOption.userProject(fakeUserProject)
             )
         }
     }
@@ -162,6 +164,7 @@ internal class RailDataFetcherTest {
                     )
                     .build(),
                 testData.toByteArray(),
+                Storage.BlobTargetOption.userProject(fakeUserProject)
             )
         }
     }
@@ -204,6 +207,7 @@ internal class RailDataFetcherTest {
                     )
                     .build(),
                 testData.toByteArray(),
+                Storage.BlobTargetOption.userProject(fakeUserProject)
             )
         }
     }
@@ -225,10 +229,12 @@ internal class RailDataFetcherTest {
         @JvmStatic
         fun setUpForAll() {
             logger.addHandler(logHandler)
+            System.setProperty("GOOGLE_CLOUD_PROJECT", fakeUserProject)
         }
 
         private val logHandler = TestLogHandler()
         private val logger = Logger.getLogger(RailDataFetcher::class.qualifiedName)
+        private const val fakeUserProject = "fakeUserProject"
 
         private const val trainTrackerApiKey = "fakeTrainTrackerApiKey"
         private const val testData = """{

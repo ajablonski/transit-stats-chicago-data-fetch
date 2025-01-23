@@ -2,6 +2,7 @@ package com.github.ajablonski
 
 import com.github.ajablonski.Constants.ETAG_HEADER
 import com.google.cloud.functions.CloudEventsFunction
+import com.google.cloud.storage.Blob
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
@@ -38,6 +39,7 @@ class FetchStaticGtfsData : CloudEventsFunction {
     }
 
     override fun accept(payload: CloudEvent?) {
+        StorageOptions.getDefaultProjectId()
         val lastDownloadedETag = fetchLastRetrievedGtfsEtag()
             .also {
                 if (it == null) {
@@ -64,11 +66,16 @@ class FetchStaticGtfsData : CloudEventsFunction {
                 logger.info("Downloading newer version and storing at gs://${Constants.BUCKET_ID}/$filePath")
                 storage.createFrom(
                     BlobInfo.newBuilder(Constants.BUCKET_ID, filePath).build(),
-                    gtfsStaticDataResponse.bodyAsChannel().toInputStream()
+                    gtfsStaticDataResponse.bodyAsChannel().toInputStream(),
+                    Storage.BlobWriteOption.userProject(StorageOptions.getDefaultProjectId())
                 )
                 logger.info("Successfully saved file, updating ETag")
 
-                storage.create(lastDownloadedETagBlobInfo, currentETag.toByteArray(Charsets.UTF_8))
+                storage.create(
+                    lastDownloadedETagBlobInfo,
+                    currentETag.toByteArray(Charsets.UTF_8),
+                    Storage.BlobTargetOption.userProject(StorageOptions.getDefaultProjectId())
+                )
                 logger.info("Successfully updated ETag")
             }
         }
@@ -82,13 +89,18 @@ class FetchStaticGtfsData : CloudEventsFunction {
 
         val subPath = lastModifiedDateTime.format(DateTimeFormatter.ofPattern("'static'/yyyy/MM/dd"))
         val prefix = "$subPath/gtfs_"
-        var blobPage = storage.list(Constants.BUCKET_ID, Storage.BlobListOption.prefix(prefix))
+        var blobPage = storage.list(
+            Constants.BUCKET_ID,
+            Storage.BlobListOption.prefix(prefix),
+            Storage.BlobListOption.userProject(StorageOptions.getDefaultProjectId())
+        )
         var largestIndex = -1
         while (blobPage != null) {
-            largestIndex = maxOf(blobPage
-                .values
-                .mapNotNull { it.name.removePrefix(prefix).removeSuffix(".zip").toIntOrNull() }
-                .maxOrNull() ?: -1, largestIndex)
+            largestIndex = maxOf(
+                blobPage
+                    .values
+                    .mapNotNull { it.name.removePrefix(prefix).removeSuffix(".zip").toIntOrNull() }
+                    .maxOrNull() ?: -1, largestIndex)
 
             blobPage = blobPage.nextPage
         }
@@ -105,9 +117,13 @@ class FetchStaticGtfsData : CloudEventsFunction {
     }
 
     private fun fetchLastRetrievedGtfsEtag(): String? {
-        val blob = storage.get(lastDownloadedETagBlobInfo.blobId)
+        val blob = storage.get(
+            lastDownloadedETagBlobInfo.blobId,
+            Storage.BlobGetOption.userProject(StorageOptions.getDefaultProjectId())
+        )
 
-        return blob?.getContent()?.toString(Charsets.UTF_8)
+        return blob?.getContent(Blob.BlobSourceOption.userProject(StorageOptions.getDefaultProjectId()))
+            ?.toString(Charsets.UTF_8)
     }
 
     companion object {
