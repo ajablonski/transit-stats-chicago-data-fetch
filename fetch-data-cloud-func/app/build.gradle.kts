@@ -19,7 +19,7 @@ dependencies {
     invoker("com.google.cloud.functions.invoker:java-function-invoker:1.3.3")
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    implementation(platform("com.google.cloud:libraries-bom:26.53.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.54.0"))
 
     implementation("com.google.cloud:google-cloud-storage:2.48.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
