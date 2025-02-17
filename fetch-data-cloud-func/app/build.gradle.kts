@@ -16,7 +16,7 @@ val invoker: Configuration by configurations.creating
 
 dependencies {
     compileOnly("com.google.cloud.functions:functions-framework-api:1.1.4")
-    invoker("com.google.cloud.functions.invoker:java-function-invoker:1.3.3")
+    invoker("com.google.cloud.functions.invoker:java-function-invoker:1.4.0")
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation(platform("com.google.cloud:libraries-bom:26.54.0"))
