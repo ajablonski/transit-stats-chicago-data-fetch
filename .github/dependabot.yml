@@ -9,3 +9,17 @@ updates:
     directory: "/fetch-data-cloud-func" # Location of package manifests
     schedule:
       interval: "weekly"
+    groups:
+      dev-dependencies:
+        patterns:
+          - "org.junit*"
+          - "org.assertj*"
+          - "*mock*"
+          - "*functions-framework-api*"
+          - "*guava-testlib*"
+      google-dependencies:
+        patterns:
+          - "com.google.cloud*"
+      patch-versions:
+        update-types:
+          - "patch"
