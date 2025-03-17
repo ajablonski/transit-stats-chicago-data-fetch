@@ -16,12 +16,12 @@ val invoker: Configuration by configurations.creating
 
 dependencies {
     compileOnly("com.google.cloud.functions:functions-framework-api:1.1.4")
-    invoker("com.google.cloud.functions.invoker:java-function-invoker:1.4.0")
+    invoker("com.google.cloud.functions.invoker:java-function-invoker:1.4.1")
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation(platform("com.google.cloud:libraries-bom:26.56.0"))
 
-    implementation("com.google.cloud:google-cloud-storage:2.49.0")
+    implementation("com.google.cloud:google-cloud-storage:2.50.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
 
