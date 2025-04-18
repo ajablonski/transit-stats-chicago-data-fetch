@@ -22,60 +22,6 @@ provider "google-beta" {
   region  = "us-central1"
 }
 
-
-moved {
-  from = google_storage_bucket.gtfs_data
-  to = module.production_bucket.google_storage_bucket.gtfs_data
-}
-
-
-moved {
-  from = google_storage_bucket.gtfs_data_test
-  to = module.test_bucket.google_storage_bucket.gtfs_data
-}
-
-moved {
-  from = google_storage_bucket_iam_binding.allow_gtfs_function_user_bucket_access
-  to = module.production_bucket.google_storage_bucket_iam_binding.allow_gtfs_function_user_bucket_access
-}
-
-moved {
-  from = google_storage_bucket_iam_binding.allow_gtfs_function_user_bucket_test_access
-  to = module.test_bucket.google_storage_bucket_iam_binding.allow_gtfs_function_user_bucket_access
-}
-
-resource "google_pubsub_topic" "static_scheduling_topic" {
-  name                       = "fetch-static-gtfs-data-triggers"
-  message_retention_duration = "86400s"
-}
-
-resource "google_pubsub_topic" "realtime_scheduling_topic" {
-  name                       = "fetch-realtime-gtfs-data-triggers"
-  message_retention_duration = "86400s"
-}
-
-resource "google_cloud_scheduler_job" "fetch_static_gtfs_data_trigger" {
-  name      = "fetch-static-gtfs-data-trigger"
-  schedule  = "0 0 * * *"
-  time_zone = "America/Chicago"
-
-  pubsub_target {
-    topic_name = google_pubsub_topic.static_scheduling_topic.id
-    data = base64encode(jsonencode({ "trigger" = "fetch-static-gtfs-data" }))
-  }
-}
-
-resource "google_cloud_scheduler_job" "fetch_realtime_gtfs_data_trigger" {
-  name      = "fetch-realtime-gtfs-data-trigger"
-  schedule  = "* * * * *"
-  time_zone = "America/Chicago"
-
-  pubsub_target {
-    topic_name = google_pubsub_topic.realtime_scheduling_topic.id
-    data = base64encode(jsonencode({ "trigger" = "fetch-realtime-gtfs-data" }))
-  }
-}
-
 data "google_project" "project" {}
 
 # Used for Gen2 Cloud Functions
@@ -141,6 +87,22 @@ module "triggers" {
 }
 
 moved {
-  from = google_project_iam_binding.allow_gtfs_fetch_user_to_bill_bucket_requests_to_project
-  to = module.production_bucket.google_project_iam_binding.allow_gtfs_fetch_user_to_bill_bucket_requests_to_project
+  from = google_pubsub_topic.static_scheduling_topic
+  to   = module.triggers.google_pubsub_topic.static_scheduling_topic
+}
+
+moved {
+  from = google_pubsub_topic.realtime_scheduling_topic
+  to   = module.triggers.google_pubsub_topic.realtime_scheduling_topic
+}
+
+moved {
+  from = google_cloud_scheduler_job.fetch_static_gtfs_data_trigger
+  to = module.triggers.google_cloud_scheduler_job.fetch_static_gtfs_data_trigger
+}
+
+
+moved {
+  from = google_cloud_scheduler_job.fetch_realtime_gtfs_data_trigger
+  to = module.triggers.google_cloud_scheduler_job.fetch_realtime_gtfs_data_trigger
 }
