@@ -16,10 +16,12 @@ provider "google-beta" {
   region  = "us-central1"
 }
 
+data "google_project" "project" {}
+
 
 resource "google_project_service_identity" "cloudbuild_service_account" {
   provider = google-beta
-  project  = var.project_id
+  project  = data.google_project.project.project_id
   service  = "cloudbuild.googleapis.com"
 }
 
@@ -29,7 +31,7 @@ data "google_iam_role" "cloudfunctions_developer_role" {
 
 resource "google_project_iam_member" "allow_cloudbuild_functions_access" {
   member  = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
-  project = var.project_id
+  project = data.google_project.project.project_id
   role    = data.google_iam_role.cloudfunctions_developer_role.id
 }
 
@@ -43,7 +45,7 @@ data "google_iam_role" "role_viewer" {
 
 resource "google_project_iam_member" "allow_cloudbuild_role_viewer_access" {
   member  = "serviceAccount:${google_project_service_identity.cloudbuild_service_account.email}"
-  project = var.project_id
+  project = data.google_project.project.project_id
   role    = data.google_iam_role.role_viewer.id
 }
 
