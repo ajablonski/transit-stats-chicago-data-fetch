@@ -22,20 +22,26 @@ provider "google-beta" {
   region  = "us-central1"
 }
 
-resource "google_storage_bucket" "gtfs_data" {
-  location                    = "US-CENTRAL1"
-  name                        = "tsc-gtfs-data"
-  storage_class               = "STANDARD"
-  uniform_bucket_level_access = true
-  requester_pays              = true
+
+moved {
+  from = google_storage_bucket.gtfs_data
+  to = module.production_bucket.google_storage_bucket.gtfs_data
 }
 
-resource "google_storage_bucket" "gtfs_data_test" {
-  location                    = "US-CENTRAL1"
-  name                        = "tsc-gtfs-data-test"
-  storage_class               = "STANDARD"
-  uniform_bucket_level_access = true
-  requester_pays              = true
+
+moved {
+  from = google_storage_bucket.gtfs_data_test
+  to = module.test_bucket.google_storage_bucket.gtfs_data
+}
+
+moved {
+  from = google_storage_bucket_iam_binding.allow_gtfs_function_user_bucket_access
+  to = module.production_bucket.google_storage_bucket_iam_binding.allow_gtfs_function_user_bucket_access
+}
+
+moved {
+  from = google_storage_bucket_iam_binding.allow_gtfs_function_user_bucket_test_access
+  to = module.test_bucket.google_storage_bucket_iam_binding.allow_gtfs_function_user_bucket_access
 }
 
 resource "google_pubsub_topic" "static_scheduling_topic" {
@@ -87,31 +93,10 @@ data "google_iam_role" "run_invoker" {
   name = "roles/run.invoker"
 }
 
-data "google_iam_role" "storage_object_user" {
-  name = "roles/storage.objectUser"
-}
-
 resource "google_project_iam_member" "allow_compute_service_user_cloud_run_invoker" {
   member  = "serviceAccount:${data.google_service_account.gen2_compute_user.email}"
   project = data.google_project.project.project_id
   role    = data.google_iam_role.run_invoker.id
-}
-
-resource "google_storage_bucket_iam_binding" "allow_gtfs_function_user_bucket_access" {
-  role   = data.google_iam_role.storage_object_user.id
-  bucket = google_storage_bucket.gtfs_data.id
-  members = [
-    "serviceAccount:${google_service_account.gtfs_fetch_user.email}",
-    "serviceAccount:${data.google_service_account.gen2_compute_user.email}"
-  ]
-}
-
-resource "google_storage_bucket_iam_binding" "allow_gtfs_function_user_bucket_test_access" {
-  role   = data.google_iam_role.storage_object_user.id
-  bucket = google_storage_bucket.gtfs_data_test.id
-  members = [
-    "serviceAccount:${google_service_account.gtfs_fetch_user.email}"
-  ]
 }
 
 data "google_iam_role" "secret_viewer_role" {
@@ -140,15 +125,22 @@ module "build_pipeline" {
   ]
 }
 
-data "google_iam_role" "service_usage_consumer_role" {
-  name = "roles/serviceusage.serviceUsageConsumer"
+module "production_bucket" {
+  source = "./modules/buckets"
+  service_account_email = google_service_account.gtfs_fetch_user.email
 }
 
-resource "google_project_iam_binding" "allow_gtfs_fetch_user_to_bill_bucket_requests_to_project" {
-  # Allows the named user to specify this project as the billing project when requesting data against a requester-pays bucket
-  members = [
-    "serviceAccount:${google_service_account.gtfs_fetch_user.email}"
-  ]
-  project = data.google_project.project.project_id
-  role    = data.google_iam_role.service_usage_consumer_role.id
+module "test_bucket" {
+  source = "./modules/buckets"
+  suffix = "-test"
+  service_account_email = google_service_account.gtfs_fetch_user.email
+}
+
+module "triggers" {
+  source = "./modules/triggers"
+}
+
+moved {
+  from = google_project_iam_binding.allow_gtfs_fetch_user_to_bill_bucket_requests_to_project
+  to = module.production_bucket.google_project_iam_binding.allow_gtfs_fetch_user_to_bill_bucket_requests_to_project
 }
