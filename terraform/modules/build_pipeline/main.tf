@@ -1,3 +1,22 @@
+terraform {
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 6.13"
+    }
+    google-beta = {
+      source = "hashicorp/google-beta"
+      version = "~> 6.30"
+    }
+  }
+}
+
+provider "google-beta" {
+  project = "transit-stats-chicago"
+  region  = "us-central1"
+}
+
+
 resource "google_project_service_identity" "cloudbuild_service_account" {
   provider = google-beta
   project  = var.project_id

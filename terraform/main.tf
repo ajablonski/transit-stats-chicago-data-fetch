@@ -3,7 +3,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "~> 4.27.0"
+      version = "~> 6.13.0"
     }
   }
   backend "gcs" {
@@ -36,46 +36,6 @@ resource "google_storage_bucket" "gtfs_data_test" {
   storage_class               = "STANDARD"
   uniform_bucket_level_access = true
   requester_pays              = true
-}
-
-resource "google_storage_bucket" "terraform_state" {
-  location                    = "US-CENTRAL1"
-  name                        = "tsc-terraform-state"
-  uniform_bucket_level_access = true
-
-  lifecycle_rule {
-    action {
-      type = "Delete"
-    }
-
-    condition {
-      age                        = 0
-      days_since_custom_time     = 0
-      days_since_noncurrent_time = 0
-      matches_storage_class = []
-      num_newer_versions         = 2
-      with_state                 = "ARCHIVED"
-    }
-  }
-
-  lifecycle_rule {
-    action {
-      type = "Delete"
-    }
-
-    condition {
-      age                        = 0
-      days_since_custom_time     = 0
-      days_since_noncurrent_time = 7
-      matches_storage_class = []
-      num_newer_versions         = 0
-      with_state                 = "ANY"
-    }
-  }
-
-  versioning {
-    enabled = true
-  }
 }
 
 resource "google_pubsub_topic" "static_scheduling_topic" {
