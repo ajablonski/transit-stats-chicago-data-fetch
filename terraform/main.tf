@@ -63,34 +63,3 @@ module "function_permissions" {
 module "triggers" {
   source = "./modules/triggers"
 }
-
-moved {
-  from = google_pubsub_topic.static_scheduling_topic
-  to   = module.triggers.google_pubsub_topic.static_scheduling_topic
-}
-
-moved {
-  from = google_pubsub_topic.realtime_scheduling_topic
-  to = module.triggers.google_pubsub_topic.realtime_scheduling_topic
-}
-
-moved {
-  from = google_cloud_scheduler_job.fetch_static_gtfs_data_trigger
-  to = module.triggers.google_cloud_scheduler_job.fetch_static_gtfs_data_trigger
-}
-
-moved {
-  from = google_cloud_scheduler_job.fetch_realtime_gtfs_data_trigger
-  to = module.triggers.google_cloud_scheduler_job.fetch_realtime_gtfs_data_trigger
-}
-
-moved {
-  from = google_project_iam_member.allow_compute_service_user_cloud_run_invoker
-  to = module.function_permissions.google_project_iam_member.allow_compute_service_user_cloud_run_invoker
-}
-
-moved {
-  from = google_secret_manager_secret_iam_binding.grant_view_secret_to_shared_compute
-  to = module.function_permissions.google_secret_manager_secret_iam_binding.grant_view_secret_to_shared_compute
-}
-
