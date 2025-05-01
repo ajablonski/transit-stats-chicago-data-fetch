@@ -24,7 +24,7 @@ internal class BusDataFetcherTest {
     private val mockEngine = MockEngine { request ->
         if (
             request.url.host == "www.ctabustracker.com"
-            && request.url.encodedPath == "/bustime/api/v2/getvehicles"
+            && request.url.encodedPath == "/bustime/api/v3/getvehicles"
             && request.url.parameters["key"] == fakeApiKey
             && request.url.parameters["tmres"] == "s"
             && request.url.parameters["format"] == "json"
@@ -86,7 +86,7 @@ internal class BusDataFetcherTest {
 
             if (
                 request.url.host == "www.ctabustracker.com"
-                && request.url.encodedPath == "/bustime/api/v2/getvehicles"
+                && request.url.encodedPath == "/bustime/api/v3/getvehicles"
                 && request.url.parameters["key"] == fakeApiKey
                 && request.url.parameters["tmres"] == "s"
                 && request.url.parameters["format"] == "json"
@@ -126,7 +126,7 @@ internal class BusDataFetcherTest {
 
             if (
                 request.url.host == "www.ctabustracker.com"
-                && request.url.encodedPath == "/bustime/api/v2/getvehicles"
+                && request.url.encodedPath == "/bustime/api/v3/getvehicles"
                 && request.url.parameters["key"] == fakeApiKey
                 && request.url.parameters["tmres"] == "s"
                 && request.url.parameters["format"] == "json"
@@ -165,7 +165,7 @@ internal class BusDataFetcherTest {
                 respondError(HttpStatusCode.InternalServerError)
             } else if (
                 request.url.host == "www.ctabustracker.com"
-                && request.url.encodedPath == "/bustime/api/v2/getvehicles"
+                && request.url.encodedPath == "/bustime/api/v3/getvehicles"
                 && request.url.parameters["key"] == fakeApiKey
                 && request.url.parameters["tmres"] == "s"
                 && request.url.parameters["format"] == "json"

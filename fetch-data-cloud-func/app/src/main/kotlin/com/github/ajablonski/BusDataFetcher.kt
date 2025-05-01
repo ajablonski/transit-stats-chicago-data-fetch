@@ -78,7 +78,7 @@ class BusDataFetcher(
         private val centralTime = ZoneId.of("America/Chicago")
 
         val logger: Logger = Logger.getLogger(BusDataFetcher::class.java.name)
-        private const val CTA_BUS_TRACKER_URL = "https://www.ctabustracker.com/bustime/api/v2/getvehicles"
+        private const val CTA_BUS_TRACKER_URL = "https://www.ctabustracker.com/bustime/api/v3/getvehicles"
 
     }
 }
