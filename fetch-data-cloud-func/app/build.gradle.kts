@@ -29,7 +29,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
 
     testImplementation("com.google.cloud.functions:functions-framework-api:1.1.4")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.13.0")
     testImplementation("com.google.guava:guava-testlib:33.4.8-jre")
     testImplementation("org.assertj:assertj-core:3.27.3")
     testImplementation("io.mockk:mockk:1.14.2")
