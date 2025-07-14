@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm") version "2.1.21"
     kotlin("plugin.serialization") version "2.2.0"
     id("com.github.ben-manes.versions") version "0.52.0"
-    id("com.gradleup.shadow") version "8.3.7"
+    id("com.gradleup.shadow") version "8.3.8"
 }
 
 repositories {
@@ -21,7 +21,7 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation(platform("com.google.cloud:libraries-bom:26.62.0"))
 
-    implementation("com.google.cloud:google-cloud-storage:2.53.2")
+    implementation("com.google.cloud:google-cloud-storage:2.53.3")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
@@ -29,7 +29,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
 
     testImplementation("com.google.cloud.functions:functions-framework-api:1.1.4")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.13.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.13.3")
     testImplementation("com.google.guava:guava-testlib:33.4.8-jre")
     testImplementation("org.assertj:assertj-core:3.27.3")
     testImplementation("io.mockk:mockk:1.14.4")
