@@ -19,9 +19,9 @@ dependencies {
     invoker("com.google.cloud.functions.invoker:java-function-invoker:1.4.1")
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    implementation(platform("com.google.cloud:libraries-bom:26.62.0"))
+    implementation(platform("com.google.cloud:libraries-bom:26.63.0"))
 
-    implementation("com.google.cloud:google-cloud-storage:2.53.2")
+    implementation("com.google.cloud:google-cloud-storage:2.53.3")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
