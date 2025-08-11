@@ -21,7 +21,7 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation(platform("com.google.cloud:libraries-bom:26.65.0"))
 
-    implementation("com.google.cloud:google-cloud-storage:2.54.0")
+    implementation("com.google.cloud:google-cloud-storage:2.55.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
