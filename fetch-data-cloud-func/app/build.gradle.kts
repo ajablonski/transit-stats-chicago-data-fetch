@@ -31,7 +31,7 @@ dependencies {
     testImplementation("com.google.cloud.functions:functions-framework-api:1.1.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
     testImplementation("com.google.guava:guava-testlib:33.4.8-jre")
-    testImplementation("org.assertj:assertj-core:3.27.3")
+    testImplementation("org.assertj:assertj-core:3.27.4")
     testImplementation("io.mockk:mockk:1.14.5")
 
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
