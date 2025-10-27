@@ -1,8 +1,8 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 plugins {
-    kotlin("jvm") version "2.2.10"
-    kotlin("plugin.serialization") version "2.2.10"
+    kotlin("jvm") version "2.2.21"
+    kotlin("plugin.serialization") version "2.2.21"
     id("com.github.ben-manes.versions") version "0.52.0"
     id("com.gradleup.shadow") version "9.0.2"
 }
@@ -16,7 +16,7 @@ val invoker: Configuration by configurations.creating
 
 dependencies {
     compileOnly("com.google.cloud.functions:functions-framework-api:1.1.4")
-    invoker("com.google.cloud.functions.invoker:java-function-invoker:1.4.1")
+    invoker("com.google.cloud.functions.invoker:java-function-invoker:1.4.3")
 
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation(platform("com.google.cloud:libraries-bom:26.67.0"))
@@ -31,8 +31,8 @@ dependencies {
     testImplementation("com.google.cloud.functions:functions-framework-api:1.1.4")
     testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
     testImplementation("com.google.guava:guava-testlib:33.4.8-jre")
-    testImplementation("org.assertj:assertj-core:3.27.4")
-    testImplementation("io.mockk:mockk:1.14.5")
+    testImplementation("org.assertj:assertj-core:3.27.6")
+    testImplementation("io.mockk:mockk:1.14.6")
 
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
 
