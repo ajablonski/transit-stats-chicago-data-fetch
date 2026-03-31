@@ -30,7 +30,7 @@ dependencies {
 
     testImplementation("com.google.cloud.functions:functions-framework-api:1.1.4")
     testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
-    testImplementation("com.google.guava:guava-testlib:33.4.8-jre")
+    testImplementation("com.google.guava:guava-testlib:33.5.0-jre")
     testImplementation("org.assertj:assertj-core:3.27.6")
     testImplementation("io.mockk:mockk:1.14.6")
 
