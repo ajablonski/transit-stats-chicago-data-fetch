@@ -32,7 +32,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:6.0.1")
     testImplementation("com.google.guava:guava-testlib:33.5.0-jre")
     testImplementation("org.assertj:assertj-core:3.27.7")
-    testImplementation("io.mockk:mockk:1.14.9")
+    testImplementation("io.mockk:mockk:1.14.11")
 
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
 
